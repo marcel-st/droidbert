@@ -16,7 +16,7 @@ Android app that shows the daily Dilbert comic in a mobile-style WebView, with t
 
 ## Behavior
 
-- Loads `https://dilbert.com/` in a full-screen WebView.
+- Loads `https://dilbert.xo.nl/` in a full-screen WebView.
 - Mimics mobile web behavior.
 - Hides the search bar/header search controls via JavaScript after each page load.
 - Shows a loading indicator while pages are loading.

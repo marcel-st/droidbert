@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            webView.loadUrl("https://dilbert.com/")
+            webView.loadUrl("https://dilbert.xo.nl/")
         } else {
             webView.restoreState(savedInstanceState)
         }
