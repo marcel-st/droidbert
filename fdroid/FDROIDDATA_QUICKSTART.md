@@ -18,6 +18,12 @@ From your Droidbert repo root:
 cp fdroid/com.droidbert.yml /path/to/fdroiddata/metadata/com.droidbert.yml
 ```
 
+Or use the helper script:
+
+```bash
+./fdroid/copy-to-fdroiddata.sh /path/to/fdroiddata
+```
+
 ## 3) Lint locally (optional but recommended)
 
 ```bash
