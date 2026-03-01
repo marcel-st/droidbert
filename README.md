@@ -97,3 +97,5 @@ Example helper usage:
 ## Changelog
 
 See `CHANGELOG.md` for release notes.
+
+Maintenance policy: every functional or workflow/configuration change should include matching updates to `README.md` and `CHANGELOG.md`.

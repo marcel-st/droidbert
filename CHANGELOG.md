@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-03-01
+
+### Changed
+- Performed end-to-end release validation for workflow guard stability.
+- Aligned `fdroid/com.droidbert.yml` to release `0.2.6` (`versionCode 8`, tag `v0.2.6`).
+- Added explicit documentation note to keep README/changelog updated with every functional or workflow change.
+
 ## [0.2.5] - 2026-03-01
 
 ### Changed

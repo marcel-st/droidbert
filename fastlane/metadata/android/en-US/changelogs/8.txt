@@ -1,0 +1,2 @@
+- Validated release and guard workflows end-to-end with improved APK asset-name checks.
+- Synced F-Droid metadata to version 0.2.6 (versionCode 8).
