@@ -27,6 +27,7 @@ Android app that shows the daily Dilbert comic in a mobile-style WebView, with t
 - Launcher icon uses `logo/droidbert.webp` as source image.
 - App resources reference `app/src/main/res/drawable/droidbert.webp` with adaptive and legacy launcher mappings.
 - Foreground logo is centered with `20dp` inset padding via `app/src/main/res/drawable/ic_launcher_logo_inset.xml`.
+- Logo WebP assets are kept free of embedded EXIF/XMP/ICC metadata for release compliance.
 
 ## Download APK (no local build required)
 

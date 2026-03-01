@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Removed embedded metadata from `logo/droidbert.webp` and `app/src/main/res/drawable/droidbert.webp` (EXIF/XMP/ICC stripped) to satisfy build/release checks.
+
 ## [0.2.6] - 2026-03-01
 
 ### Changed
