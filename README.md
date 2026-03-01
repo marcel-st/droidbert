@@ -25,7 +25,7 @@ Android app that shows the daily Dilbert comic in a mobile-style WebView, with t
 ## Download APK (no local build required)
 
 1. Open the GitHub **Releases** page for this repository.
-2. Download the `app-debug.apk` asset from the latest release.
+2. Download the `droidbert-<version>.apk` asset from the latest release.
 3. Install it on your Android device.
 
 ## Release process (tagging + APK asset)
@@ -33,7 +33,7 @@ Android app that shows the daily Dilbert comic in a mobile-style WebView, with t
 This repository includes a GitHub Actions workflow at `.github/workflows/release-apk.yml`.
 
 - Trigger: push a tag matching `v*` (for example `v0.1.0`).
-- Result: GitHub builds the app and creates a release with `app-debug.apk` attached.
+- Result: GitHub builds the app and creates a release with `droidbert-<version>.apk` attached.
 
 Example commands:
 

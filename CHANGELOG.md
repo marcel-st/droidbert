@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Default comic URL changed to `https://dilbert.xo.nl/` because the legacy Dilbert site no longer serves the comics feed.
+- Release APK asset naming now uses `droidbert-<version>.apk`.
 
 ## [0.1.0] - 2026-03-01
 
