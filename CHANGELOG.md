@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-03-01
+
 ### Added
 - Apache-2.0 project license file.
 - F-Droid metadata template `fdroid/com.droidbert.yml`.
