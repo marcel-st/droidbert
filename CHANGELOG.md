@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-03-01
+
 ### Added
 - Custom launcher icon assets using `logo/droidbert.webp` as source.
 - New padded logo drawable `ic_launcher_logo_inset.xml` for consistent icon framing.
