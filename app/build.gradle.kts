@@ -7,6 +7,15 @@ android {
     namespace = "com.droidbert"
     compileSdk = 35
 
+    val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+    val keystorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+    val keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+    val keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+    val hasReleaseSigning = !keystorePath.isNullOrBlank() &&
+        !keystorePassword.isNullOrBlank() &&
+        !keyAlias.isNullOrBlank() &&
+        !keyPassword.isNullOrBlank()
+
     defaultConfig {
         applicationId = "com.droidbert"
         minSdk = 24
@@ -19,16 +28,7 @@ android {
 
     signingConfigs {
         create("release") {
-            val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
-            val keystorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-            val keyAlias = System.getenv("ANDROID_KEY_ALIAS")
-            val keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
-
-            if (!keystorePath.isNullOrBlank() &&
-                !keystorePassword.isNullOrBlank() &&
-                !keyAlias.isNullOrBlank() &&
-                !keyPassword.isNullOrBlank()
-            ) {
+            if (hasReleaseSigning) {
                 storeFile = file(keystorePath)
                 storePassword = keystorePassword
                 this.keyAlias = keyAlias
@@ -40,7 +40,9 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

@@ -1,0 +1,2 @@
+- Switched release builds to stable keystore signing for update compatibility.
+- Added launcher icon based on Droidbert logo with mask-safe padding.

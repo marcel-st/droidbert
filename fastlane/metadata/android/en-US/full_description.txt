@@ -1,0 +1,13 @@
+Droidbert is a focused Android WebView app for reading the daily Dilbert comic.
+
+It opens the mobile comic site and removes search UI elements from the page header so the comic remains front and center.
+
+Features:
+- Full-screen comic reading view
+- Loading indicator while pages load
+- In-app back navigation inside the WebView
+- Session restore on configuration changes
+- No account required
+
+This app loads content from:
+https://dilbert.xo.nl/
