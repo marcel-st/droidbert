@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Updated `fdroid/com.droidbert.yml` and normalized `AutoUpdateMode` to `Version v%v` for tag-based update tracking.
+
 ## [0.2.7] - 2026-03-01
 
 ### Changed
