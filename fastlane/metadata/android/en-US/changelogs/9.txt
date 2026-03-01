@@ -1,0 +1,2 @@
+- Removed EXIF/XMP/ICC metadata from WebP logo assets used in app resources.
+- Validated release pipeline after image metadata cleanup.
