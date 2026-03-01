@@ -1,0 +1,60 @@
+name: Version and Changelog Guard
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  changelog-on-version-change:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require changelog update when app version changes
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          DIFF_FILES=$(git diff --name-only "$BASE" "$HEAD")
+
+          if echo "$DIFF_FILES" | grep -q '^app/build.gradle.kts$'; then
+            if ! echo "$DIFF_FILES" | grep -q '^CHANGELOG.md$'; then
+              echo "CHANGELOG.md must be updated when app/build.gradle.kts changes."
+              exit 1
+            fi
+          fi
+
+      - name: Require Unreleased section in changelog
+        run: |
+          if ! grep -q '^## \[Unreleased\]' CHANGELOG.md; then
+            echo "CHANGELOG.md must contain an [Unreleased] section."
+            exit 1
+          fi
+
+  tag-matches-version:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure tag matches versionName and changelog entry
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION_NAME=$(grep -E 'versionName = "[0-9]+\.[0-9]+\.[0-9]+"' app/build.gradle.kts | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+
+          if [ "$TAG" != "$VERSION_NAME" ]; then
+            echo "Tag version ($TAG) does not match app versionName ($VERSION_NAME)."
+            exit 1
+          fi
+
+          if ! grep -q "^## \[$TAG\]" CHANGELOG.md; then
+            echo "CHANGELOG.md must contain a section for [$TAG]."
+            exit 1
+          fi

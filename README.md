@@ -42,6 +42,24 @@ git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 ```
 
+## Automated version bump + changelog workflow
+
+- Run the **Bump Version** workflow (`.github/workflows/bump-version.yml`) manually from GitHub Actions.
+- Provide a semantic version (example: `0.2.0`).
+- The workflow will:
+	- increment `versionCode`
+	- set `versionName`
+	- add a new dated section in `CHANGELOG.md`
+	- create and push tag `v<version>`
+
+## Changelog/version guard workflow
+
+- The **Version and Changelog Guard** workflow (`.github/workflows/version-changelog-guard.yml`) enforces:
+	- `CHANGELOG.md` must be updated when `app/build.gradle.kts` changes in PRs
+	- `CHANGELOG.md` must include `## [Unreleased]`
+	- pushed release tags (`v*`) must match `versionName`
+	- changelog must contain the matching version section
+
 ## Changelog
 
 See `CHANGELOG.md` for release notes.

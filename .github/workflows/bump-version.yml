@@ -1,0 +1,85 @@
+name: Bump Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "New semantic version (e.g. 0.2.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate version format
+        run: |
+          if ! echo "${{ github.event.inputs.version }}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Version must match x.y.z"
+            exit 1
+          fi
+
+      - name: Ensure release does not exist yet
+        run: |
+          if grep -q "## \[${{ github.event.inputs.version }}\]" CHANGELOG.md; then
+            echo "Version already exists in CHANGELOG.md"
+            exit 1
+          fi
+
+      - name: Bump version in app/build.gradle.kts
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          CURRENT_CODE=$(grep -E 'versionCode = [0-9]+' app/build.gradle.kts | sed -E 's/[^0-9]//g')
+          NEXT_CODE=$((CURRENT_CODE + 1))
+
+          sed -i -E "s/versionCode = [0-9]+/versionCode = ${NEXT_CODE}/" app/build.gradle.kts
+          sed -i -E "s/versionName = \"[0-9]+\.[0-9]+\.[0-9]+\"/versionName = \"${VERSION}\"/" app/build.gradle.kts
+
+      - name: Ensure Unreleased section exists
+        run: |
+          if ! grep -q '^## \[Unreleased\]' CHANGELOG.md; then
+            awk 'NR==3 {print "\n## [Unreleased]\n"} {print}' CHANGELOG.md > CHANGELOG.new.md
+            mv CHANGELOG.new.md CHANGELOG.md
+          fi
+
+      - name: Add version section to changelog
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          TODAY=$(date +%Y-%m-%d)
+
+          awk -v version="$VERSION" -v today="$TODAY" '
+            BEGIN { inserted=0 }
+            {
+              print
+              if (!inserted && $0 ~ /^## \[Unreleased\]$/) {
+                print ""
+                print "## [" version "] - " today
+                print ""
+                print "### Added"
+                print "- _Describe changes here._"
+                inserted=1
+              }
+            }
+          ' CHANGELOG.md > CHANGELOG.new.md
+          mv CHANGELOG.new.md CHANGELOG.md
+
+      - name: Configure git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit, tag and push
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          git add app/build.gradle.kts CHANGELOG.md
+          git commit -m "chore(release): bump to v${VERSION}"
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+          git push
+          git push origin "v${VERSION}"
