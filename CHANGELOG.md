@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Apache-2.0 project license file.
+- F-Droid metadata template `fdroid/com.droidbert.yml`.
+- Submission documentation `fdroid/SUBMISSION.md` and `fdroid/FDROIDDATA_QUICKSTART.md`.
+- Helper script `fdroid/copy-to-fdroiddata.sh` to copy metadata into a local `fdroiddata` checkout.
+- Fastlane metadata for app listing text and changelog under `fastlane/metadata/android/en-US/`.
+
+### Changed
+- Release signing config now remains optional when signing env vars are absent, enabling F-Droid/local unsigned release builds.
+
 ## [0.2.3] - 2026-03-01
 
 ### Changed

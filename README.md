@@ -76,6 +76,22 @@ git push origin v0.1.0
 	- changelog must contain the matching version section
 	- completed releases must include APK asset `droidbert-<version>.apk`
 
+## F-Droid metadata
+
+This repository contains metadata and helper files to simplify submission to the official F-Droid `fdroiddata` repository.
+
+- App metadata template: `fdroid/com.droidbert.yml`
+- Submission checklist and MR text: `fdroid/SUBMISSION.md`
+- Quickstart commands: `fdroid/FDROIDDATA_QUICKSTART.md`
+- Helper script to copy metadata into a local `fdroiddata` checkout: `fdroid/copy-to-fdroiddata.sh`
+- Fastlane listing metadata: `fastlane/metadata/android/en-US/`
+
+Example helper usage:
+
+```bash
+./fdroid/copy-to-fdroiddata.sh /path/to/fdroiddata
+```
+
 ## Changelog
 
 See `CHANGELOG.md` for release notes.
