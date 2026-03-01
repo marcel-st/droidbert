@@ -34,12 +34,21 @@ Android app that shows the daily Dilbert comic in a mobile-style WebView, with t
 2. Download the `droidbert-<version>.apk` asset from the latest release.
 3. Install it on your Android device.
 
+If Android reports the APK is blocked by an installed app, the installed app was signed with a different key. Uninstall the currently installed Droidbert once, then install the new APK.
+
 ## Release process (tagging + APK asset)
 
 This repository includes a GitHub Actions workflow at `.github/workflows/release-apk.yml`.
 
 - Trigger: push a tag matching `v*` (for example `v0.1.0`).
-- Result: GitHub builds the app and creates a release with `droidbert-<version>.apk` attached.
+- Result: GitHub builds a signed `release` APK and creates a release with `droidbert-<version>.apk` attached.
+
+Required GitHub repository secrets for signing:
+
+- `ANDROID_KEYSTORE_BASE64` (base64-encoded keystore file)
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
 
 Example commands:
 

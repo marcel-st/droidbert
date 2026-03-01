@@ -24,8 +24,33 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Build debug APK
-        run: ./gradlew :app:assembleDebug
+      - name: Prepare signing keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets['ANDROID_KEYSTORE_BASE64'] }}
+        run: |
+          if [ -z "${ANDROID_KEYSTORE_BASE64}" ]; then
+            echo "Missing required secret: ANDROID_KEYSTORE_BASE64"
+            exit 1
+          fi
+
+          mkdir -p "$RUNNER_TEMP"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+
+      - name: Build signed release APK
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets['ANDROID_KEYSTORE_PASSWORD'] }}
+          ANDROID_KEY_ALIAS: ${{ secrets['ANDROID_KEY_ALIAS'] }}
+          ANDROID_KEY_PASSWORD: ${{ secrets['ANDROID_KEY_PASSWORD'] }}
+        run: |
+          for var in ANDROID_KEYSTORE_PATH ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!var}" ]; then
+              echo "Missing required signing variable: $var"
+              exit 1
+            fi
+          done
+
+          ./gradlew :app:assembleRelease
 
       - name: Prepare versioned APK filename
         run: |
@@ -35,11 +60,11 @@ jobs:
           fi
 
           APK_NAME="droidbert-${VERSION}.apk"
-          cp app/build/outputs/apk/debug/app-debug.apk "app/build/outputs/apk/debug/${APK_NAME}"
+          cp app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/${APK_NAME}"
           echo "APK_NAME=${APK_NAME}" >> "$GITHUB_ENV"
 
       - name: Create GitHub release with APK
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: app/build/outputs/apk/debug/droidbert-*.apk
+          files: app/build/outputs/apk/release/droidbert-*.apk

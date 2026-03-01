@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-03-01
+
+### Changed
+- Release workflow now builds a consistently signed `release` APK from repository signing secrets instead of a runner-specific debug-signed APK.
+- Documented one-time uninstall requirement for users who installed older builds signed with a different key.
+
 ## [0.2.2] - 2026-03-01
 
 ### Added
