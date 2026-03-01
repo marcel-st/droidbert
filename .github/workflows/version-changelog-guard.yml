@@ -96,18 +96,12 @@ jobs:
             exit 1
           fi
 
-          echo "$RELEASE_JSON" | python - "$EXPECTED_ASSET" <<'PY'
-          import json
-          import sys
+          ASSET_NAMES=$(gh api "$RELEASE_API" --jq '.assets[].name' 2>/dev/null || true)
 
-          expected = sys.argv[1]
-          release = json.load(sys.stdin)
-          assets = [asset.get("name", "") for asset in release.get("assets", [])]
+          if ! printf '%s\n' "$ASSET_NAMES" | grep -Fxq "$EXPECTED_ASSET"; then
+            echo "Expected APK asset not found: $EXPECTED_ASSET"
+            echo "Available assets: ${ASSET_NAMES:-'(none)'}"
+            exit 1
+          fi
 
-          if expected not in assets:
-            print(f"Expected APK asset not found: {expected}")
-            print("Available assets:", ", ".join(assets) if assets else "(none)")
-            sys.exit(1)
-
-          print(f"Verified APK asset name: {expected}")
-          PY
+          echo "Verified APK asset name: $EXPECTED_ASSET"
