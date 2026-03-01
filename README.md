@@ -86,6 +86,8 @@ This repository contains metadata and helper files to simplify submission to the
 - Helper script to copy metadata into a local `fdroiddata` checkout: `fdroid/copy-to-fdroiddata.sh`
 - Fastlane listing metadata: `fastlane/metadata/android/en-US/`
 
+Keep `Builds`, `CurrentVersion`, and `CurrentVersionCode` in `fdroid/com.droidbert.yml` aligned with `app/build.gradle.kts` and the latest release tag.
+
 Example helper usage:
 
 ```bash

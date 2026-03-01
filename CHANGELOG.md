@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Verified `fdroid/com.droidbert.yml` and aligned F-Droid metadata to release `0.2.4` (`versionCode 6`, tag `v0.2.4`).
+
 ## [0.2.4] - 2026-03-01
 
 ### Added
