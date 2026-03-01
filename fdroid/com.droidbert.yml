@@ -1,0 +1,36 @@
+Categories:
+  - Internet
+  - Reading
+License: Apache-2.0
+AuthorName: Marcel Stangenberger
+WebSite: https://dilbert.xo.nl/
+SourceCode: https://github.com/marcel-st/droidbert
+IssueTracker: https://github.com/marcel-st/droidbert/issues
+Changelog: https://github.com/marcel-st/droidbert/blob/main/CHANGELOG.md
+
+AutoName: Droidbert
+Summary: Daily Dilbert viewer with a clean, search-free reading experience.
+Description: |-
+    Droidbert is a focused Android WebView app for reading the daily Dilbert comic.
+
+    It opens https://dilbert.xo.nl/ and hides search UI elements in the header
+    to keep the comic as the primary reading surface.
+
+    Features:
+    * Full-screen comic view
+    * Loading indicator while pages load
+    * In-app back navigation
+    * State restore on configuration changes
+
+RepoType: git
+Repo: https://github.com/marcel-st/droidbert.git
+
+Builds:
+  - versionName: 0.2.3
+    versionCode: 5
+    commit: v0.2.3
+    gradle:
+      - yes
+
+CurrentVersion: 0.2.3
+CurrentVersionCode: 5
