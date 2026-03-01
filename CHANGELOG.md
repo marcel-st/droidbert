@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-03-01
+
 ### Changed
 - Verified `fdroid/com.droidbert.yml` and aligned F-Droid metadata to release `0.2.4` (`versionCode 6`, tag `v0.2.4`).
 - Fixed `Version and Changelog Guard` workflow `release-apk-name-check` step by correcting heredoc indentation in the Python asset-name validation block.
