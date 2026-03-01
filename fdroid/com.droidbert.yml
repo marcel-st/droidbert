@@ -26,14 +26,14 @@ RepoType: git
 Repo: https://github.com/marcel-st/droidbert.git
 
 Builds:
-  - versionName: 0.2.9
-    versionCode: 11
-    commit: v0.2.9
+  - versionName: 0.2.10
+    versionCode: 12
+    commit: v0.2.10
     subdir: app
     gradle:
       - yes
 
-AutoUpdateMode: Versionv%v
+AutoUpdateMode: Version +v%v
 UpdateCheckMode: Tags
-CurrentVersion: 0.2.9
-CurrentVersionCode: 11
+CurrentVersion: 0.2.10
+CurrentVersionCode: 12

@@ -4,8 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-03-01
+
 ### Changed
-- Synced `fdroid/com.droidbert.yml` build/version fields to `v0.2.9` (`versionCode 11`) while keeping the configured `AutoUpdateMode` unchanged.
+- Synced `fdroid/com.droidbert.yml` build/version fields to `v0.2.10` (`versionCode 12`) while keeping the configured `AutoUpdateMode` (`Version +v%v`) unchanged.
 
 ## [0.2.9] - 2026-03-01
 

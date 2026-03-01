@@ -1,0 +1,2 @@
+- Synced F-Droid metadata to version 0.2.10 (versionCode 12).
+- Kept configured AutoUpdateMode value (`Version +v%v`) unchanged.
