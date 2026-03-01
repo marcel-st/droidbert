@@ -88,7 +88,7 @@ This repository contains metadata and helper files to simplify submission to the
 - Fastlane listing metadata: `fastlane/metadata/android/en-US/`
 
 Keep `Builds`, `CurrentVersion`, and `CurrentVersionCode` in `fdroid/com.droidbert.yml` aligned with `app/build.gradle.kts` and the latest release tag.
-Use `AutoUpdateMode: Version v%v` with `UpdateCheckMode: Tags` for tag-based F-Droid update detection.
+Use `AutoUpdateMode: Versionv%v` with `UpdateCheckMode: Tags` for tag-based F-Droid update detection.
 
 Example helper usage:
 

@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-03-01
+
+### Changed
+- Updated `fdroid/com.droidbert.yml` with repaired `AutoUpdateMode` (`Versionv%v`) after F-Droid validation feedback.
+
 ## [0.2.8] - 2026-03-01
 
 ### Changed

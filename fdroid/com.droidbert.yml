@@ -33,7 +33,7 @@ Builds:
     gradle:
       - yes
 
-AutoUpdateMode: Version v%v
+AutoUpdateMode: Versionv%v
 UpdateCheckMode: Tags
 CurrentVersion: 0.2.7
 CurrentVersionCode: 9
