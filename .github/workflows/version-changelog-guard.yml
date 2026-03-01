@@ -6,6 +6,9 @@ on:
   push:
     tags:
       - "v*"
+  workflow_run:
+    workflows: ["Release APK"]
+    types: [completed]
 
 jobs:
   changelog-on-version-change:
@@ -58,3 +61,53 @@ jobs:
             echo "CHANGELOG.md must contain a section for [$TAG]."
             exit 1
           fi
+
+  release-apk-name-check:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Verify release APK name matches version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG_REF: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          TAG="${TAG_REF#v}"
+
+          if [ -z "$TAG" ] || [ "$TAG" = "$TAG_REF" ]; then
+            echo "Expected tag-like head branch (v<version>), got: $TAG_REF"
+            exit 1
+          fi
+
+          EXPECTED_ASSET="droidbert-${TAG}.apk"
+          RELEASE_API="repos/${REPO}/releases/tags/v${TAG}"
+
+          for _ in $(seq 1 10); do
+            if RELEASE_JSON=$(gh api "$RELEASE_API" 2>/dev/null); then
+              break
+            fi
+            sleep 6
+          done
+
+          if [ -z "$RELEASE_JSON" ]; then
+            echo "Could not retrieve release metadata for v${TAG}."
+            exit 1
+          fi
+
+            echo "$RELEASE_JSON" | python - "$EXPECTED_ASSET" <<'PY'
+            import json
+            import sys
+
+            expected = sys.argv[1]
+            release = json.load(sys.stdin)
+            assets = [asset.get("name", "") for asset in release.get("assets", [])]
+
+            if expected not in assets:
+              print(f"Expected APK asset not found: {expected}")
+              print("Available assets:", ", ".join(assets) if assets else "(none)")
+              sys.exit(1)
+
+            print(f"Verified APK asset name: {expected}")
+            PY

@@ -59,6 +59,7 @@ git push origin v0.1.0
 	- `CHANGELOG.md` must include `## [Unreleased]`
 	- pushed release tags (`v*`) must match `versionName`
 	- changelog must contain the matching version section
+	- completed releases must include APK asset `droidbert-<version>.apk`
 
 ## Changelog
 
