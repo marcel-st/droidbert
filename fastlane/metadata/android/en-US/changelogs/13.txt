@@ -1,0 +1,1 @@
+Fixed F-Droid metadata validation by setting AutoUpdateMode to schema-valid 'Version' and aligned metadata to release 0.2.11.

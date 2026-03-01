@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-03-01
+
+### Changed
+- Updated `fdroid/com.droidbert.yml` to use schema-valid `AutoUpdateMode: Version` and aligned release metadata to `v0.2.11` (`versionCode 13`).
+
 ## [0.2.10] - 2026-03-01
 
 ### Changed
