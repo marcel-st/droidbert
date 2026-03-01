@@ -96,18 +96,18 @@ jobs:
             exit 1
           fi
 
-            echo "$RELEASE_JSON" | python - "$EXPECTED_ASSET" <<'PY'
-            import json
-            import sys
+          echo "$RELEASE_JSON" | python - "$EXPECTED_ASSET" <<'PY'
+          import json
+          import sys
 
-            expected = sys.argv[1]
-            release = json.load(sys.stdin)
-            assets = [asset.get("name", "") for asset in release.get("assets", [])]
+          expected = sys.argv[1]
+          release = json.load(sys.stdin)
+          assets = [asset.get("name", "") for asset in release.get("assets", [])]
 
-            if expected not in assets:
-              print(f"Expected APK asset not found: {expected}")
-              print("Available assets:", ", ".join(assets) if assets else "(none)")
-              sys.exit(1)
+          if expected not in assets:
+            print(f"Expected APK asset not found: {expected}")
+            print("Available assets:", ", ".join(assets) if assets else "(none)")
+            sys.exit(1)
 
-            print(f"Verified APK asset name: {expected}")
-            PY
+          print(f"Verified APK asset name: {expected}")
+          PY
