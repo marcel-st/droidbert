@@ -5,20 +5,21 @@ This file provides copy/paste text and a checklist for submitting Droidbert to t
 ## Current app metadata
 
 - App ID: `com.droidbert`
-- Current version: `0.2.3`
-- Current versionCode: `5`
+- Current version: `0.2.12`
+- Current versionCode: `14`
 - Source repository: `https://github.com/marcel-st/droidbert`
-- Latest metadata commit: `6511d3a2c758522384e0b24ca5b561ac5fb1e829`
-- Latest release tag: `v0.2.3`
+- Latest release tag: `v0.2.12`
 
 ## Files to use in fdroiddata
 
 - Metadata file in this repo: `fdroid/com.droidbert.yml`
+- Localized metadata directory in this repo: `fdroid/com.droidbert/`
 - Fastlane metadata path: `fastlane/metadata/android/en-US/`
 
 For `fdroiddata`, add/copy to:
 
 - `metadata/com.droidbert.yml`
+- `metadata/com.droidbert/en-US/summary.txt`
 
 ## Suggested merge request title
 
@@ -34,14 +35,15 @@ This MR adds metadata for **Droidbert**, an Android WebView app that shows the d
 ### Included
 
 - `metadata/com.droidbert.yml`
+- `metadata/com.droidbert/en-US/summary.txt`
 - Fastlane metadata in upstream source (`fastlane/metadata/android/en-US`)
 
 ### Build details
 
 - Source: `https://github.com/marcel-st/droidbert.git`
 - Build system: Gradle (`gradle: yes`)
-- Current version: `0.2.3` (`versionCode 5`)
-- Commit/tag for current version: `v0.2.3`
+- Current version: `0.2.12` (`versionCode 14`)
+- Commit/tag for current version: `v0.2.12`
 
 ### Notes for reviewers
 

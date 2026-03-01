@@ -9,7 +9,6 @@ IssueTracker: https://github.com/marcel-st/droidbert/issues
 Changelog: https://github.com/marcel-st/droidbert/blob/main/CHANGELOG.md
 
 AutoName: Droidbert
-Summary: Daily Dilbert viewer with a clean, search-free reading experience
 Description: |-
   Droidbert is a focused Android WebView app for reading the daily Dilbert comic.
 
@@ -26,14 +25,14 @@ RepoType: git
 Repo: https://github.com/marcel-st/droidbert.git
 
 Builds:
-  - versionName: 0.2.11
-    versionCode: 13
-    commit: v0.2.11
+  - versionName: 0.2.12
+    versionCode: 14
+    commit: v0.2.12
     subdir: app
     gradle:
       - yes
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 0.2.11
-CurrentVersionCode: 13
+CurrentVersion: 0.2.12
+CurrentVersionCode: 14

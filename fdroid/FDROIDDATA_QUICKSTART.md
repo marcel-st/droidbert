@@ -16,6 +16,8 @@ From your Droidbert repo root:
 
 ```bash
 cp fdroid/com.droidbert.yml /path/to/fdroiddata/metadata/com.droidbert.yml
+mkdir -p /path/to/fdroiddata/metadata/com.droidbert/en-US
+cp fdroid/com.droidbert/en-US/summary.txt /path/to/fdroiddata/metadata/com.droidbert/en-US/summary.txt
 ```
 
 Or use the helper script:
@@ -34,7 +36,7 @@ fdroid lint metadata/com.droidbert.yml
 ## 4) Commit with a minimal message
 
 ```bash
-git add metadata/com.droidbert.yml
+git add metadata/com.droidbert.yml metadata/com.droidbert/en-US/summary.txt
 git commit -m "Add Droidbert (com.droidbert)"
 git push origin add-droidbert
 ```
@@ -55,6 +57,6 @@ Suggested short MR body:
 Adds metadata for Droidbert (`com.droidbert`).
 
 - Source: https://github.com/marcel-st/droidbert
-- Current version: 0.2.3 (versionCode 5)
+- Current version: 0.2.12 (versionCode 14)
 - Build: Gradle (`gradle: yes`)
 ```

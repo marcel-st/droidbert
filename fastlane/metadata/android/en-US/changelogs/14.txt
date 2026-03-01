@@ -1,0 +1,1 @@
+Moved F-Droid app summary to metadata/com.droidbert/en-US/summary.txt and updated submission helpers/docs to satisfy fdroiddata checks.

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.12] - 2026-03-01
+
+### Changed
+- F-Droid metadata now stores the app summary in `fdroid/com.droidbert/en-US/summary.txt` (instead of `Summary:` in YAML) to satisfy `fdroiddata` `make-summary-translatable.py` checks.
+- Updated F-Droid helper docs/scripts to copy localized summary metadata alongside `com.droidbert.yml`.
+
 ## [0.2.11] - 2026-03-01
 
 ### Changed
