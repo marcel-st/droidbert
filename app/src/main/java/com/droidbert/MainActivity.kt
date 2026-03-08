@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity() {
     private fun loadInitialComic() {
         val storedDate = getLastViewedDate()
         if (storedDate.isNullOrBlank()) {
-            loadComic(FIRST_COMIC_DATE)
+            loadComic(date = FIRST_COMIC_DATE, fallbackToLatestIfMissing = true)
         } else {
             loadComic(storedDate)
         }
@@ -196,7 +196,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadComic(date: String?) {
+    private fun loadComic(date: String?, fallbackToLatestIfMissing: Boolean = false) {
         if (isLoading) return
         lifecycleScope.launch {
             setLoadingState(true, getString(R.string.loading_comic))
@@ -214,7 +214,15 @@ class MainActivity : AppCompatActivity() {
                     setLoadingState(false, "")
                     val message = if (throwable is ComicApiException) {
                         when {
-                            throwable.code == 404 && date != null -> getString(R.string.date_not_found, date)
+                            throwable.code == 404 && date != null && isDateNotFoundResponse(throwable.message) -> {
+                                if (fallbackToLatestIfMissing) {
+                                    statusText.text = getString(R.string.first_comic_missing_fallback)
+                                    loadLatestComic()
+                                    return@fold
+                                }
+                                getString(R.string.date_not_found, date)
+                            }
+
                             throwable.code == 404 && date == null -> getString(
                                 R.string.api_endpoint_not_found,
                                 getApiBaseUrl()
@@ -377,6 +385,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         return getString(R.string.network_error)
+    }
+
+    private fun isDateNotFoundResponse(message: String): Boolean {
+        return message.contains("comic not found", ignoreCase = true)
     }
 
     private fun parseDate(date: String): Calendar? {

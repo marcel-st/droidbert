@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-03-08
+
+### Fixed
+- First launch now tries `1989-04-16` and automatically falls back to latest available comic if that date is not present on the configured API server.
+- Improved `404` handling so date-not-found is only shown for real API "comic not found" responses.
+
 ## [0.3.2] - 2026-03-08
 
 ### Fixed

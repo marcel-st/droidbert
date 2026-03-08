@@ -1,0 +1,1 @@
+Hotfix: if 1989-04-16 is unavailable on the configured API server, first launch now falls back to latest comic instead of failing startup.
