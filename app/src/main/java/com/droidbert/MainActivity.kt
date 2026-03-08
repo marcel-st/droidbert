@@ -41,8 +41,25 @@ import java.util.regex.Pattern
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        private const val MAX_NAVIGATION_LOOKUPS = 15000
+        private const val FIRST_COMIC_DATE = "1989-04-16"
+        private val API_PATH_SUFFIXES = listOf("/api/current.php", "/api/comic.php")
         private const val DEFAULT_ACCEPT_HEADER = "*/*"
         private const val DEFAULT_ACCEPT_LANGUAGE_HEADER = "en-US,en;q=0.9"
+
+        internal fun resolveInitialComicRequest(storedDate: String?): InitialComicRequest {
+            return if (storedDate.isNullOrBlank()) {
+                InitialComicRequest(
+                    date = FIRST_COMIC_DATE,
+                    fallbackToLatestIfMissing = true
+                )
+            } else {
+                InitialComicRequest(
+                    date = storedDate,
+                    fallbackToLatestIfMissing = false
+                )
+            }
+        }
     }
 
     private lateinit var comicImage: ImageView
@@ -581,23 +598,4 @@ class MainActivity : AppCompatActivity() {
         val fallbackToLatestIfMissing: Boolean
     )
 
-    companion object {
-        private const val MAX_NAVIGATION_LOOKUPS = 15000
-        private const val FIRST_COMIC_DATE = "1989-04-16"
-        private val API_PATH_SUFFIXES = listOf("/api/current.php", "/api/comic.php")
-
-        internal fun resolveInitialComicRequest(storedDate: String?): InitialComicRequest {
-            return if (storedDate.isNullOrBlank()) {
-                InitialComicRequest(
-                    date = FIRST_COMIC_DATE,
-                    fallbackToLatestIfMissing = true
-                )
-            } else {
-                InitialComicRequest(
-                    date = storedDate,
-                    fallbackToLatestIfMissing = false
-                )
-            }
-        }
-    }
 }
