@@ -547,7 +547,7 @@ class MainActivity : AppCompatActivity() {
         val model = Build.MODEL ?: "Android"
         return "Mozilla/5.0 (Linux; Android $osVersion; $model) AppleWebKit/537.36 " +
             "(KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36 " +
-            "Droidbert/${BuildConfig.VERSION_NAME}"
+            "Droidbert/Android"
     }
 
     private fun parseDate(date: String): Calendar? {
