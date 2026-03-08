@@ -1,0 +1,1 @@
+Hotfix: improved API endpoint error messages and automatic API URL normalization in Settings so comic loading issues are easier to diagnose and fix.

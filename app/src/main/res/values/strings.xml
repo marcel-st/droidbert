@@ -22,4 +22,5 @@
     <string name="save">Save</string>
     <string name="settings_saved">Settings saved.</string>
     <string name="invalid_api_url">Please enter a valid URL.</string>
+    <string name="api_endpoint_not_found">API endpoint not found at %1$s. Open Settings and enter a valid /api/comic.php URL.</string>
 </resources>

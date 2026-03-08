@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-03-08
+
+### Fixed
+- Improved API error handling so missing or invalid API endpoints no longer show only a generic network message.
+- Added explicit guidance on-screen when the configured API endpoint returns `404` for latest comic loading.
+- Added API URL normalization so entering a site root in Settings automatically resolves to `/api/comic.php`.
+
 ## [0.3.0] - 2026-03-08
 
 ### Added

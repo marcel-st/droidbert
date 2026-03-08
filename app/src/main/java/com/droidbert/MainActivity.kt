@@ -203,8 +203,17 @@ class MainActivity : AppCompatActivity() {
                 },
                 onFailure = { throwable ->
                     setLoadingState(false, "")
-                    val message = if (throwable is ComicApiException && throwable.code == 404 && date != null) {
-                        getString(R.string.date_not_found, date)
+                    val message = if (throwable is ComicApiException) {
+                        when {
+                            throwable.code == 404 && date != null -> getString(R.string.date_not_found, date)
+                            throwable.code == 404 && date == null -> getString(
+                                R.string.api_endpoint_not_found,
+                                getApiBaseUrl()
+                            )
+
+                            throwable.message.isNotBlank() -> throwable.message
+                            else -> getString(R.string.network_error)
+                        }
                     } else {
                         throwable.message ?: getString(R.string.network_error)
                     }
@@ -323,9 +332,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getApiBaseUrl(): String {
-        return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
+        val stored = getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
             .getString(AppPrefs.KEY_API_BASE_URL, getString(R.string.api_base_url_default))
             .orEmpty()
+        return ApiUrlUtils.normalizeApiBaseUrl(stored)
     }
 
     private fun extractDateFromHeader(pathHeader: String?): String? {
@@ -337,7 +347,14 @@ class MainActivity : AppCompatActivity() {
     private fun extractApiError(body: ByteArray): String {
         val raw = body.toString(Charsets.UTF_8)
         val match = Regex("\"error\"\\s*:\\s*\"([^\"]+)\"").find(raw)
-        return match?.groupValues?.getOrNull(1) ?: getString(R.string.network_error)
+        match?.groupValues?.getOrNull(1)?.let { return it }
+
+        val plainText = raw.trim().replace(Regex("\\s+"), " ")
+        if (plainText.isNotBlank() && plainText.length <= 200) {
+            return plainText
+        }
+
+        return getString(R.string.network_error)
     }
 
     private fun parseDate(date: String): Calendar? {

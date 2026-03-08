@@ -40,10 +40,12 @@ class SettingsActivity : AppCompatActivity() {
             return
         }
 
+        val normalizedUrl = ApiUrlUtils.normalizeApiBaseUrl(url)
+
         apiInputLayout.error = null
         getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
             .edit()
-            .putString(AppPrefs.KEY_API_BASE_URL, url)
+            .putString(AppPrefs.KEY_API_BASE_URL, normalizedUrl)
             .apply()
 
         Toast.makeText(this, R.string.settings_saved, Toast.LENGTH_SHORT).show()
