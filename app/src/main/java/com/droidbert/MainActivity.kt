@@ -234,6 +234,11 @@ class MainActivity : AppCompatActivity() {
                                 getApiBaseUrl()
                             )
 
+                            throwable.code == 404 && throwable.message.contains("404 page not found", ignoreCase = true) -> getString(
+                                R.string.server_not_ready,
+                                getApiBaseUrl()
+                            )
+
                             throwable.message.isNotBlank() -> throwable.message
                             else -> getString(R.string.network_error)
                         }
@@ -393,8 +398,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fetchLegacyComic(baseUrl: HttpUrl, date: String?): ComicPayload? {
-        val root = baseUrl.newBuilder().encodedPath("/").query(null).build()
-        val files = getLegacyComicFiles(root)
+        val legacyRoots = buildLegacyRoots(baseUrl)
+        val filesByRoot = legacyRoots
+            .map { it to getLegacyComicFiles(it) }
+            .firstOrNull { it.second.isNotEmpty() }
+            ?: return null
+
+        val root = filesByRoot.first
+        val files = filesByRoot.second
+
         if (files.isEmpty()) {
             return null
         }
@@ -422,13 +434,39 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun buildLegacyRoots(baseUrl: HttpUrl): List<HttpUrl> {
+        val hostRoot = baseUrl.newBuilder()
+            .encodedPath("/")
+            .query(null)
+            .build()
+
+        val apiPath = baseUrl.encodedPath
+        val pathRoot = if (apiPath.endsWith("/api/comic.php")) {
+            val prefix = apiPath.removeSuffix("/api/comic.php").ifBlank { "/" }
+            baseUrl.newBuilder()
+                .encodedPath(if (prefix.endsWith('/')) prefix else "$prefix/")
+                .query(null)
+                .build()
+        } else {
+            hostRoot
+        }
+
+        return listOf(pathRoot, hostRoot).distinctBy { it.toString() }
+    }
+
     private fun getLegacyComicFiles(root: HttpUrl): List<String> {
         val originKey = root.toString()
         if (legacyIndexCacheOrigin == originKey && legacyIndexCacheFiles.isNotEmpty()) {
             return legacyIndexCacheFiles
         }
 
-        val indexUrl = root.newBuilder().encodedPath("/get_comics.php").query(null).build()
+        val basePath = root.encodedPath.trimEnd('/').ifBlank { "" }
+        val indexPath = if (basePath.isBlank()) {
+            "/get_comics.php"
+        } else {
+            "$basePath/get_comics.php"
+        }
+        val indexUrl = root.newBuilder().encodedPath(indexPath).query(null).build()
         val request = Request.Builder().url(indexUrl).get().build()
         val files = httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {

@@ -23,5 +23,6 @@
     <string name="settings_saved">Settings saved.</string>
     <string name="invalid_api_url">Please enter a valid URL.</string>
     <string name="api_endpoint_not_found">API endpoint not found at %1$s. Open Settings and enter a valid /api/comic.php URL.</string>
+    <string name="server_not_ready">Server at %1$s is currently returning "404 page not found" for both API and legacy endpoints. Deploy or configure a running Daily Dilbert server and try again.</string>
     <string name="first_comic_missing_fallback">First comic not available on this server, loading latest available comic…</string>
 </resources>

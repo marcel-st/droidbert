@@ -1,0 +1,1 @@
+Hotfix: better fallback handling for subpath deployments and clearer diagnosis when server returns plain 404 for API + legacy endpoints.

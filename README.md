@@ -90,7 +90,7 @@ This repository contains metadata and helper files to simplify submission to the
 
 Keep `Builds`, `CurrentVersion`, and `CurrentVersionCode` in `fdroid/com.droidbert.yml` aligned with `app/build.gradle.kts` and the latest release tag.
 Use `AutoUpdateMode: Version` with `UpdateCheckMode: Tags` for tag-based F-Droid update detection.
-Current metadata is aligned to `v0.3.5` / `versionCode 20`.
+Current metadata is aligned to `v0.3.6` / `versionCode 21`.
 
 Example helper usage:
 

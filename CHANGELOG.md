@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-03-08
+
+### Fixed
+- Improved legacy fallback root resolution for self-hosted deployments under subpaths (for example `/daily_dilbert/`) so `get_comics.php` and `/comics/...` are resolved correctly.
+- Added explicit server-down messaging when the configured host returns plain `404 page not found` for both API and legacy endpoints.
+
 ## [0.3.5] - 2026-03-08
 
 ### Changed
