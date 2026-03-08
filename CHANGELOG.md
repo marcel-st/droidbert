@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.10] - 2026-03-08
+
+### Fixed
+- Re-cut the release from the latest fixed `main` state so tag, source, and APK are aligned.
+- Removed remaining release-build regressions in `MainActivity` caused by duplicate companion-object declarations and `BuildConfig` usage in the request user-agent path.
+
 ## [0.3.9] - 2026-03-08
 
 ### Fixed

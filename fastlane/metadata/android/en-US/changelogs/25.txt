@@ -1,0 +1,2 @@
+- Re-cut release from the latest fixed main state so tag, source, and APK are aligned.
+- Removed release-build regressions in MainActivity related to companion-object conflicts and user-agent construction.
