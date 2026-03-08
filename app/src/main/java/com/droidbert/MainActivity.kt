@@ -40,6 +40,11 @@ import java.util.regex.Pattern
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        private const val DEFAULT_ACCEPT_HEADER = "*/*"
+        private const val DEFAULT_ACCEPT_LANGUAGE_HEADER = "en-US,en;q=0.9"
+    }
+
     private lateinit var comicImage: ImageView
     private lateinit var loadingIndicator: CircularProgressIndicator
     private lateinit var comicDateText: TextView
@@ -283,7 +288,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }.build()
 
-            val request = Request.Builder().url(requestUrl).get().build()
+            val request = buildRequest(requestUrl)
             httpClient.newCall(request).execute().use { response ->
                 val bodyBytes = response.body?.bytes() ?: ByteArray(0)
                 if (!response.isSuccessful) {
@@ -338,7 +343,7 @@ class MainActivity : AppCompatActivity() {
             val requestUrl = baseUrl.newBuilder()
                 .addQueryParameter("date", date)
                 .build()
-            val request = Request.Builder().url(requestUrl).get().build()
+            val request = buildRequest(requestUrl)
             httpClient.newCall(request).execute().use { response ->
                 val bodyBytes = response.body?.bytes() ?: ByteArray(0)
                 if (!response.isSuccessful) {
@@ -426,7 +431,7 @@ class MainActivity : AppCompatActivity() {
             .addPathSegments(relativePath)
             .build()
 
-        val imageRequest = Request.Builder().url(imageUrl).get().build()
+        val imageRequest = buildRequest(imageUrl)
         httpClient.newCall(imageRequest).execute().use { imageResponse ->
             if (!imageResponse.isSuccessful) {
                 return null
@@ -471,7 +476,7 @@ class MainActivity : AppCompatActivity() {
             "$basePath/get_comics.php"
         }
         val indexUrl = root.newBuilder().encodedPath(indexPath).query(null).build()
-        val request = Request.Builder().url(indexUrl).get().build()
+        val request = buildRequest(indexUrl)
         val files = httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 return emptyList()
@@ -508,6 +513,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun isDateNotFoundResponse(message: String): Boolean {
         return message.contains("comic not found", ignoreCase = true)
+    }
+
+    private fun buildRequest(url: HttpUrl): Request {
+        return Request.Builder()
+            .url(url)
+            .get()
+            .header("User-Agent", buildUserAgent())
+            .header("Accept", DEFAULT_ACCEPT_HEADER)
+            .header("Accept-Language", DEFAULT_ACCEPT_LANGUAGE_HEADER)
+            .build()
+    }
+
+    private fun buildUserAgent(): String {
+        val osVersion = Build.VERSION.RELEASE ?: "unknown"
+        val model = Build.MODEL ?: "Android"
+        return "Mozilla/5.0 (Linux; Android $osVersion; $model) AppleWebKit/537.36 " +
+            "(KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36 " +
+            "Droidbert/${BuildConfig.VERSION_NAME}"
     }
 
     private fun parseDate(date: String): Calendar? {

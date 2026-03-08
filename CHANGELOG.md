@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.9] - 2026-03-08
+
+### Fixed
+- Added browser-like request headers (`User-Agent`, `Accept`, `Accept-Language`) for both API and legacy fallback requests to avoid false `404 page not found` responses on filtered hosts.
+- Fixed startup failures where the app could incorrectly report both API and legacy endpoints as unavailable even when `dilbert.xo.nl` was up.
+
 ## [0.3.8] - 2026-03-08
 
 ### Fixed

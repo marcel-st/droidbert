@@ -1,0 +1,2 @@
+- Fixed false "404 page not found" endpoint failures by sending browser-like request headers for API and legacy fetches.
+- Improved compatibility with hosts/CDNs that block bot-like clients, including `dilbert.xo.nl`.
