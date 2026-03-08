@@ -1,0 +1,1 @@
+Hotfix: automatic fallback now supports servers without /api/comic.php by using get_comics.php + /comics/... paths (fixes 404 loading on dilbert.xo.nl).

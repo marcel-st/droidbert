@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-03-08
+
+### Fixed
+- Added automatic fallback for servers that do not expose `api/comic.php` by using `get_comics.php` + `/comics/...` image paths.
+- Fixed comic loading on `dilbert.xo.nl` where the API route returns `404`, including latest/date/prev/next navigation.
+
 ## [0.3.3] - 2026-03-08
 
 ### Fixed

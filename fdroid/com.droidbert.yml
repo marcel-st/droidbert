@@ -14,6 +14,8 @@ Description: |-
 
   It loads comic images directly from the Daily Dilbert API instead of embedding
   a website, providing a cleaner and faster reading experience.
+  For hosts without `api/comic.php`, it can automatically use legacy
+  `get_comics.php` + `/comics/...` paths.
 
   Features:
   * Native image-first comic reader UI
@@ -26,14 +28,14 @@ RepoType: git
 Repo: https://github.com/marcel-st/droidbert.git
 
 Builds:
-  - versionName: 0.3.3
-    versionCode: 18
-    commit: v0.3.3
+  - versionName: 0.3.4
+    versionCode: 19
+    commit: v0.3.4
     subdir: app
     gradle:
       - yes
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 0.3.3
-CurrentVersionCode: 18
+CurrentVersion: 0.3.4
+CurrentVersionCode: 19

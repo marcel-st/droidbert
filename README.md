@@ -17,6 +17,7 @@ Android app for reading Dilbert comics with a native interface backed by the Dai
 ## Behavior
 
 - Loads comic images directly from `https://dilbert.xo.nl/api/comic.php`.
+- Automatically falls back to legacy `get_comics.php` + `/comics/...` endpoints when `api/comic.php` is unavailable on a host.
 - Shows a native comic reader UI optimized for phones.
 - Supports `Latest`, date picker lookup, and previous/next comic navigation.
 - Decodes and renders GIF comic images natively.
@@ -88,8 +89,8 @@ This repository contains metadata and helper files to simplify submission to the
 - Fastlane listing metadata: `fastlane/metadata/android/en-US/`
 
 Keep `Builds`, `CurrentVersion`, and `CurrentVersionCode` in `fdroid/com.droidbert.yml` aligned with `app/build.gradle.kts` and the latest release tag.
-Use `AutoUpdateMode: Version +v%v` with `UpdateCheckMode: Tags` for tag-based F-Droid update detection.
-Current metadata is aligned to `v0.3.3` / `versionCode 18`.
+Use `AutoUpdateMode: Version` with `UpdateCheckMode: Tags` for tag-based F-Droid update detection.
+Current metadata is aligned to `v0.3.4` / `versionCode 19`.
 
 Example helper usage:
 

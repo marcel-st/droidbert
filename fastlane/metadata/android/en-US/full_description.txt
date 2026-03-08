@@ -9,6 +9,7 @@ Features:
 - Previous/Next navigation through available comics
 - GIF image decoding for original comic format
 - Configurable API endpoint in Settings
+- Automatic fallback for hosts that serve comics via get_comics.php + /comics/... paths
 - No account required
 
 Default API endpoint:

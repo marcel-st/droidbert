@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
@@ -47,6 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     private val httpClient = OkHttpClient()
     private val apiPathRegex = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})_")
+    private val legacyComicPathRegex = Pattern.compile("\"(\\d{4}/\\d{4}-\\d{2}-\\d{2}[^\"\\\\]*?\\.gif)\"")
     private val isoDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply {
         isLenient = false
         timeZone = TimeZone.getTimeZone("UTC")
@@ -56,6 +58,8 @@ class MainActivity : AppCompatActivity() {
     private var currentDate: String? = null
     private var isLoading = false
     private var lastKnownApiBaseUrl: String? = null
+    private var legacyIndexCacheOrigin: String? = null
+    private var legacyIndexCacheFiles: List<String> = emptyList()
 
     private val settingsLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -119,6 +123,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
         lastKnownApiBaseUrl = currentApi
+        legacyIndexCacheOrigin = null
+        legacyIndexCacheFiles = emptyList()
         val dateToReload = currentDate
         if (dateToReload.isNullOrBlank()) {
             loadInitialComic()
@@ -273,6 +279,12 @@ class MainActivity : AppCompatActivity() {
             httpClient.newCall(request).execute().use { response ->
                 val bodyBytes = response.body?.bytes() ?: ByteArray(0)
                 if (!response.isSuccessful) {
+                    if (response.code == 404) {
+                        val fallback = fetchLegacyComic(baseUrl, date)
+                        if (fallback != null) {
+                            return@use fallback
+                        }
+                    }
                     val apiError = extractApiError(bodyBytes)
                     throw ComicApiException(response.code, apiError)
                 }
@@ -322,6 +334,12 @@ class MainActivity : AppCompatActivity() {
             httpClient.newCall(request).execute().use { response ->
                 val bodyBytes = response.body?.bytes() ?: ByteArray(0)
                 if (!response.isSuccessful) {
+                    if (response.code == 404) {
+                        val fallback = fetchLegacyComic(baseUrl, date)
+                        if (fallback != null) {
+                            return Result.success(fallback)
+                        }
+                    }
                     val apiError = extractApiError(bodyBytes)
                     return Result.failure(ComicApiException(response.code, apiError))
                 }
@@ -372,6 +390,65 @@ class MainActivity : AppCompatActivity() {
         if (pathHeader.isNullOrBlank()) return null
         val matcher = apiPathRegex.matcher(pathHeader)
         return if (matcher.find()) matcher.group(1) else null
+    }
+
+    private fun fetchLegacyComic(baseUrl: HttpUrl, date: String?): ComicPayload? {
+        val root = baseUrl.newBuilder().encodedPath("/").query(null).build()
+        val files = getLegacyComicFiles(root)
+        if (files.isEmpty()) {
+            return null
+        }
+
+        val relativePath = if (date.isNullOrBlank()) {
+            files.lastOrNull()
+        } else {
+            files.firstOrNull { extractDateFromHeader(it) == date }
+        } ?: return null
+
+        val resolvedDate = extractDateFromHeader(relativePath) ?: date ?: return null
+        val imageUrl = root.newBuilder()
+            .addPathSegment("comics")
+            .addPathSegments(relativePath)
+            .build()
+
+        val imageRequest = Request.Builder().url(imageUrl).get().build()
+        httpClient.newCall(imageRequest).execute().use { imageResponse ->
+            if (!imageResponse.isSuccessful) {
+                return null
+            }
+
+            val imageBytes = imageResponse.body?.bytes() ?: return null
+            return ComicPayload(resolvedDate, imageBytes)
+        }
+    }
+
+    private fun getLegacyComicFiles(root: HttpUrl): List<String> {
+        val originKey = root.toString()
+        if (legacyIndexCacheOrigin == originKey && legacyIndexCacheFiles.isNotEmpty()) {
+            return legacyIndexCacheFiles
+        }
+
+        val indexUrl = root.newBuilder().encodedPath("/get_comics.php").query(null).build()
+        val request = Request.Builder().url(indexUrl).get().build()
+        val files = httpClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                return emptyList()
+            }
+            val body = response.body?.string().orEmpty()
+            val matcher = legacyComicPathRegex.matcher(body)
+            val matches = mutableListOf<String>()
+            while (matcher.find()) {
+                matcher.group(1)?.let(matches::add)
+            }
+            matches
+        }
+
+        if (files.isNotEmpty()) {
+            legacyIndexCacheOrigin = originKey
+            legacyIndexCacheFiles = files
+        }
+
+        return files
     }
 
     private fun extractApiError(body: ByteArray): String {
