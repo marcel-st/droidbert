@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.8] - 2026-03-08
+
+### Fixed
+- Added status bar window-inset handling for main and settings toolbars so the app title and overflow menu no longer overlap the system status area on modern Android versions.
+
 ## [0.3.7] - 2026-03-08
 
 ### Changed

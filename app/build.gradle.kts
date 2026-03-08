@@ -20,8 +20,8 @@ android {
         applicationId = "com.droidbert"
         minSdk = 24
         targetSdk = 35
-        versionCode = 22
-        versionName = "0.3.7"
+        versionCode = 23
+        versionName = "0.3.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

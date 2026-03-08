@@ -11,6 +11,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import coil.ImageLoader
 import coil.decode.GifDecoder
@@ -71,6 +74,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        applyToolbarWindowInsets(toolbar)
         setSupportActionBar(toolbar)
 
         comicImage = findViewById(R.id.comic_image)
@@ -515,6 +519,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun parseDateToMillis(date: String): Long? {
         return parseDate(date)?.timeInMillis
+    }
+
+    private fun applyToolbarWindowInsets(toolbar: MaterialToolbar) {
+        val initialPaddingTop = toolbar.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, windowInsets ->
+            val statusBarInsets: Insets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.setPadding(
+                view.paddingLeft,
+                initialPaddingTop + statusBarInsets.top,
+                view.paddingRight,
+                view.paddingBottom
+            )
+            windowInsets
+        }
+        ViewCompat.requestApplyInsets(toolbar)
     }
 
     private sealed class AdjacentComicResult {

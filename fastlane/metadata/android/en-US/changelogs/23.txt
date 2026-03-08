@@ -1,0 +1,2 @@
+- Fixed top bar overlap on modern Android devices by applying status bar window insets to app toolbars.
+- App title and overflow menu are now rendered below the system status area.

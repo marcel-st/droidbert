@@ -4,6 +4,9 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -20,6 +23,7 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.settings_toolbar)
+        applyToolbarWindowInsets(toolbar)
         toolbar.setNavigationOnClickListener { finish() }
 
         apiInputLayout = findViewById(R.id.api_input_layout)
@@ -57,5 +61,20 @@ class SettingsActivity : AppCompatActivity() {
         return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
             .getString(AppPrefs.KEY_API_BASE_URL, getString(R.string.api_base_url_default))
             .orEmpty()
+    }
+
+    private fun applyToolbarWindowInsets(toolbar: MaterialToolbar) {
+        val initialPaddingTop = toolbar.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, windowInsets ->
+            val statusBarInsets: Insets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.setPadding(
+                view.paddingLeft,
+                initialPaddingTop + statusBarInsets.top,
+                view.paddingRight,
+                view.paddingBottom
+            )
+            windowInsets
+        }
+        ViewCompat.requestApplyInsets(toolbar)
     }
 }
