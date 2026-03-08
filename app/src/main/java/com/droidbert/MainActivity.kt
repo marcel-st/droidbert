@@ -1,101 +1,374 @@
 package com.droidbert
 
-import android.annotation.SuppressLint
-import android.graphics.Bitmap
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import coil.ImageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.load
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.progressindicator.CircularProgressIndicator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import java.util.regex.Pattern
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var webView: WebView
-    private lateinit var loadingIndicator: View
+    private lateinit var comicImage: ImageView
+    private lateinit var loadingIndicator: CircularProgressIndicator
+    private lateinit var comicDateText: TextView
+    private lateinit var statusText: TextView
+    private lateinit var previousButton: MaterialButton
+    private lateinit var nextButton: MaterialButton
+    private lateinit var latestButton: MaterialButton
+    private lateinit var pickDateButton: MaterialButton
 
-    @SuppressLint("SetJavaScriptEnabled")
+    private val httpClient = OkHttpClient()
+    private val apiPathRegex = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})_")
+    private val isoDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply {
+        isLenient = false
+        timeZone = TimeZone.getTimeZone("UTC")
+    }
+
+    private lateinit var imageLoader: ImageLoader
+    private var currentDate: String? = null
+    private var isLoading = false
+    private var lastKnownApiBaseUrl: String? = null
+
+    private val settingsLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            refreshIfApiUrlChanged()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        webView = findViewById(R.id.webview)
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        comicImage = findViewById(R.id.comic_image)
         loadingIndicator = findViewById(R.id.loading_indicator)
-        webView.settings.javaScriptEnabled = true
-        webView.settings.domStorageEnabled = true
-        webView.settings.loadsImagesAutomatically = true
-        webView.settings.useWideViewPort = true
-        webView.settings.loadWithOverviewMode = true
+        comicDateText = findViewById(R.id.comic_date_text)
+        statusText = findViewById(R.id.status_text)
+        previousButton = findViewById(R.id.previous_button)
+        nextButton = findViewById(R.id.next_button)
+        latestButton = findViewById(R.id.latest_button)
+        pickDateButton = findViewById(R.id.pick_date_button)
 
-        webView.webChromeClient = WebChromeClient()
-        webView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                return false
-            }
-
-            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                super.onPageStarted(view, url, favicon)
-                webView.visibility = View.INVISIBLE
-                loadingIndicator.visibility = View.VISIBLE
-            }
-
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                removeSearchBar()
-                webView.visibility = View.VISIBLE
-                loadingIndicator.visibility = View.GONE
-            }
-        }
-
-        if (savedInstanceState == null) {
-            webView.loadUrl("https://dilbert.xo.nl/")
-        } else {
-            webView.restoreState(savedInstanceState)
-        }
-    }
-
-    private fun removeSearchBar() {
-        webView.evaluateJavascript(
-            """
-            (function() {
-                const styleId = 'droidbert-hide-search';
-                if (!document.getElementById(styleId)) {
-                    const style = document.createElement('style');
-                    style.id = styleId;
-                    style.textContent = `
-                        header form[role="search"],
-                        header input[type="search"],
-                        header .search,
-                        header .search-form,
-                        header .search-container,
-                        nav form[role="search"],
-                        nav input[type="search"],
-                        nav .search,
-                        nav .search-form,
-                        nav .search-container,
-                        [aria-label="Search"] {
-                            display: none !important;
-                        }
-                    `;
-                    document.head.appendChild(style);
+        imageLoader = ImageLoader.Builder(this)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
                 }
-            })();
-            """.trimIndent(),
-            null
-        )
+            }
+            .build()
+
+        previousButton.setOnClickListener { loadAdjacentComic(daysDelta = -1) }
+        nextButton.setOnClickListener { loadAdjacentComic(daysDelta = 1) }
+        latestButton.setOnClickListener { loadLatestComic() }
+        pickDateButton.setOnClickListener { openDatePicker() }
+
+        lastKnownApiBaseUrl = getApiBaseUrl()
+        loadLatestComic()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        webView.saveState(outState)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
     }
 
-    override fun onBackPressed() {
-        if (this::webView.isInitialized && webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                settingsLauncher.launch(Intent(this, SettingsActivity::class.java))
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun refreshIfApiUrlChanged() {
+        val currentApi = getApiBaseUrl()
+        if (currentApi == lastKnownApiBaseUrl) {
+            return
+        }
+        lastKnownApiBaseUrl = currentApi
+        val dateToReload = currentDate
+        if (dateToReload.isNullOrBlank()) {
+            loadLatestComic()
+        } else {
+            loadComic(dateToReload)
+        }
+    }
+
+    private fun openDatePicker() {
+        val selectedMillis = currentDate?.let(::parseDateToMillis)
+        val builder = MaterialDatePicker.Builder.datePicker()
+            .setTitleText(getString(R.string.pick_date))
+        if (selectedMillis != null) {
+            builder.setSelection(selectedMillis)
+        }
+        val picker = builder.build()
+        picker.addOnPositiveButtonClickListener { utcMillis ->
+            val selectedDate = isoDateFormat.format(Date(utcMillis))
+            loadComic(date = selectedDate)
+        }
+        picker.show(supportFragmentManager, "pick_date")
+    }
+
+    private fun loadLatestComic() {
+        setStaticStatus(getString(R.string.loading_latest))
+        loadComic(date = null)
+    }
+
+    private fun loadAdjacentComic(daysDelta: Int) {
+        val startDate = currentDate ?: return
+        if (isLoading) return
+
+        val baseDate = parseDate(startDate) ?: return
+        val searchingText = if (daysDelta < 0) {
+            getString(R.string.searching_previous)
+        } else {
+            getString(R.string.searching_next)
+        }
+
+        lifecycleScope.launch {
+            setLoadingState(true, searchingText)
+            val found = withContext(Dispatchers.IO) {
+                findAdjacentComic(baseDate, daysDelta)
+            }
+
+            when (found) {
+                is AdjacentComicResult.Found -> {
+                    renderComic(found.payload)
+                    setLoadingState(false, "")
+                }
+
+                is AdjacentComicResult.EndReached -> {
+                    setLoadingState(false, "")
+                    statusText.text = if (daysDelta < 0) {
+                        getString(R.string.no_more_previous)
+                    } else {
+                        getString(R.string.no_more_next)
+                    }
+                }
+
+                is AdjacentComicResult.Error -> {
+                    setLoadingState(false, "")
+                    statusText.text = found.message
+                }
+            }
+        }
+    }
+
+    private fun loadComic(date: String?) {
+        if (isLoading) return
+        lifecycleScope.launch {
+            setLoadingState(true, getString(R.string.loading_comic))
+
+            val result = withContext(Dispatchers.IO) {
+                fetchComic(date)
+            }
+
+            result.fold(
+                onSuccess = { payload ->
+                    renderComic(payload)
+                    setLoadingState(false, "")
+                },
+                onFailure = { throwable ->
+                    setLoadingState(false, "")
+                    val message = if (throwable is ComicApiException && throwable.code == 404 && date != null) {
+                        getString(R.string.date_not_found, date)
+                    } else {
+                        throwable.message ?: getString(R.string.network_error)
+                    }
+                    statusText.text = message
+                }
+            )
+        }
+    }
+
+    private fun renderComic(payload: ComicPayload) {
+        currentDate = payload.date
+        comicDateText.text = getString(R.string.date_title_prefix, payload.date)
+        statusText.text = ""
+
+        comicImage.load(payload.bytes, imageLoader) {
+            crossfade(true)
+            listener(
+                onError = { _, _ ->
+                    statusText.text = getString(R.string.network_error)
+                }
+            )
+        }
+    }
+
+    private suspend fun fetchComic(date: String?): Result<ComicPayload> {
+        return runCatching {
+            val baseUrl = getApiBaseUrl().toHttpUrlOrNull()
+                ?: throw IllegalStateException(getString(R.string.invalid_api_url))
+
+            val requestUrl = baseUrl.newBuilder().apply {
+                if (date.isNullOrBlank()) {
+                    addQueryParameter("latest", "1")
+                } else {
+                    addQueryParameter("date", date)
+                }
+            }.build()
+
+            val request = Request.Builder().url(requestUrl).get().build()
+            httpClient.newCall(request).execute().use { response ->
+                val bodyBytes = response.body?.bytes() ?: ByteArray(0)
+                if (!response.isSuccessful) {
+                    val apiError = extractApiError(bodyBytes)
+                    throw ComicApiException(response.code, apiError)
+                }
+
+                val resolvedDate = extractDateFromHeader(response.header("X-Comic-Path"))
+                    ?: date
+                    ?: throw ComicApiException(500, "Comic date metadata missing")
+
+                ComicPayload(
+                    date = resolvedDate,
+                    bytes = bodyBytes
+                )
+            }
+        }
+    }
+
+    private fun findAdjacentComic(startDate: Calendar, daysDelta: Int): AdjacentComicResult {
+        val probeDate = startDate.clone() as Calendar
+        repeat(MAX_NAVIGATION_LOOKUPS) {
+            probeDate.add(Calendar.DAY_OF_MONTH, daysDelta)
+            val isoDate = isoDateFormat.format(probeDate.time)
+            val fetchResult = fetchComicBlocking(isoDate)
+
+            if (fetchResult.isSuccess) {
+                return AdjacentComicResult.Found(fetchResult.getOrThrow())
+            }
+
+            val error = fetchResult.exceptionOrNull()
+            if (error is ComicApiException && error.code == 404) {
+                return@repeat
+            }
+
+            return AdjacentComicResult.Error(error?.message ?: getString(R.string.network_error))
+        }
+
+        return AdjacentComicResult.EndReached
+    }
+
+    private fun fetchComicBlocking(date: String): Result<ComicPayload> {
+        return try {
+            val baseUrl = getApiBaseUrl().toHttpUrlOrNull()
+                ?: return Result.failure(IllegalStateException(getString(R.string.invalid_api_url)))
+            val requestUrl = baseUrl.newBuilder()
+                .addQueryParameter("date", date)
+                .build()
+            val request = Request.Builder().url(requestUrl).get().build()
+            httpClient.newCall(request).execute().use { response ->
+                val bodyBytes = response.body?.bytes() ?: ByteArray(0)
+                if (!response.isSuccessful) {
+                    val apiError = extractApiError(bodyBytes)
+                    return Result.failure(ComicApiException(response.code, apiError))
+                }
+                val resolvedDate = extractDateFromHeader(response.header("X-Comic-Path")) ?: date
+                Result.success(ComicPayload(resolvedDate, bodyBytes))
+            }
+        } catch (io: IOException) {
+            Result.failure(ComicApiException(0, getString(R.string.network_error), io))
+        }
+    }
+
+    private fun setLoadingState(loading: Boolean, loadingMessage: String) {
+        isLoading = loading
+        loadingIndicator.visibility = if (loading) View.VISIBLE else View.GONE
+        previousButton.isEnabled = !loading
+        nextButton.isEnabled = !loading
+        latestButton.isEnabled = !loading
+        pickDateButton.isEnabled = !loading
+        if (loadingMessage.isNotBlank()) {
+            statusText.text = loadingMessage
+        }
+    }
+
+    private fun setStaticStatus(message: String) {
+        statusText.text = message
+    }
+
+    private fun getApiBaseUrl(): String {
+        return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
+            .getString(AppPrefs.KEY_API_BASE_URL, getString(R.string.api_base_url_default))
+            .orEmpty()
+    }
+
+    private fun extractDateFromHeader(pathHeader: String?): String? {
+        if (pathHeader.isNullOrBlank()) return null
+        val matcher = apiPathRegex.matcher(pathHeader)
+        return if (matcher.find()) matcher.group(1) else null
+    }
+
+    private fun extractApiError(body: ByteArray): String {
+        val raw = body.toString(Charsets.UTF_8)
+        val match = Regex("\"error\"\\s*:\\s*\"([^\"]+)\"").find(raw)
+        return match?.groupValues?.getOrNull(1) ?: getString(R.string.network_error)
+    }
+
+    private fun parseDate(date: String): Calendar? {
+        val parsed = runCatching { isoDateFormat.parse(date) }.getOrNull() ?: return null
+        return Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.US).apply {
+            time = parsed
+        }
+    }
+
+    private fun parseDateToMillis(date: String): Long? {
+        return parseDate(date)?.timeInMillis
+    }
+
+    private sealed class AdjacentComicResult {
+        data class Found(val payload: ComicPayload) : AdjacentComicResult()
+        data class Error(val message: String) : AdjacentComicResult()
+        data object EndReached : AdjacentComicResult()
+    }
+
+    private data class ComicPayload(
+        val date: String,
+        val bytes: ByteArray
+    )
+
+    private class ComicApiException(
+        val code: Int,
+        override val message: String,
+        cause: Throwable? = null
+    ) : IOException(message, cause)
+
+    companion object {
+        private const val MAX_NAVIGATION_LOOKUPS = 15000
     }
 }

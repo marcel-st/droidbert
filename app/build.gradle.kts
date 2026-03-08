@@ -20,8 +20,8 @@ android {
         applicationId = "com.droidbert"
         minSdk = 24
         targetSdk = 35
-        versionCode = 14
-        versionName = "0.2.12"
+        versionCode = 15
+        versionName = "0.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -61,5 +61,9 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("com.google.android.material:material:1.12.0")
+    implementation("io.coil-kt:coil:2.7.0")
+    implementation("io.coil-kt:coil-gif:2.7.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }

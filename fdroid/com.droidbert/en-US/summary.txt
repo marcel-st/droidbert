@@ -1,1 +1,1 @@
-Daily Dilbert viewer with a clean, search-free reading experience
+Native Dilbert comic reader with latest/date navigation and API-based loading

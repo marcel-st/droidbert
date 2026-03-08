@@ -10,29 +10,30 @@ Changelog: https://github.com/marcel-st/droidbert/blob/main/CHANGELOG.md
 
 AutoName: Droidbert
 Description: |-
-  Droidbert is a focused Android WebView app for reading the daily Dilbert comic.
+  Droidbert is a native Android comic reader for Dilbert.
 
-  It opens https://dilbert.xo.nl/ and hides search UI elements in the header
-  to keep the comic as the primary reading surface.
+  It loads comic images directly from the Daily Dilbert API instead of embedding
+  a website, providing a cleaner and faster reading experience.
 
   Features:
-  * Full-screen comic view
-  * Loading indicator while pages load
-  * In-app back navigation
-  * State restore on configuration changes
+  * Native image-first comic reader UI
+  * Latest comic shortcut
+  * Date picker and previous/next navigation
+  * GIF comic decoding
+  * Configurable API base URL in app settings
 
 RepoType: git
 Repo: https://github.com/marcel-st/droidbert.git
 
 Builds:
-  - versionName: 0.2.12
-    versionCode: 14
-    commit: v0.2.12
+  - versionName: 0.3.0
+    versionCode: 15
+    commit: v0.3.0
     subdir: app
     gradle:
       - yes
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 0.2.12
-CurrentVersionCode: 14
+CurrentVersion: 0.3.0
+CurrentVersionCode: 15

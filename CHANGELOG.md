@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-08
+
+### Added
+- Native comic reader UI with Material 3 layout, loading states, and image-focused reading surface.
+- Direct API integration with `api/comic.php` for `latest` and date-based comic loading.
+- In-app date picker and previous/next comic navigation by date.
+- Runtime Settings screen to configure the API base URL without rebuilding the app.
+
+### Changed
+- Replaced the WebView-based implementation with native network/image loading using OkHttp + Coil (GIF support).
+- Upgraded build tooling and local build compatibility (AGP 8.6.1, JDK 21 pinning, SDK setup guidance).
+
 ## [0.2.12] - 2026-03-01
 
 ### Changed

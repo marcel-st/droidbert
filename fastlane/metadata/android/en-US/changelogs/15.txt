@@ -1,0 +1,1 @@
+Major rewrite: replaced the WebView with a native comic reader that loads comics directly from api/comic.php, including latest/date navigation and configurable API endpoint settings.

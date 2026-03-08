@@ -1,6 +1,6 @@
 # Droidbert
 
-Android app that shows the daily Dilbert comic in a mobile-style WebView, with the top search UI removed.
+Android app for reading Dilbert comics with a native interface backed by the Daily Dilbert image API.
 
 ## Requirements
 
@@ -16,11 +16,11 @@ Android app that shows the daily Dilbert comic in a mobile-style WebView, with t
 
 ## Behavior
 
-- Loads `https://dilbert.xo.nl/` in a full-screen WebView.
-- Mimics mobile web behavior.
-- Hides the search bar/header search controls via JavaScript after each page load.
-- Shows a loading indicator while pages are loading.
-- Supports back navigation inside the WebView.
+- Loads comic images directly from `https://dilbert.xo.nl/api/comic.php`.
+- Shows a native comic reader UI optimized for phones.
+- Supports `Latest`, date picker lookup, and previous/next comic navigation.
+- Decodes and renders GIF comic images natively.
+- Includes a Settings screen to change API base URL at runtime.
 
 ## App icon
 
@@ -54,8 +54,8 @@ Required GitHub repository secrets for signing:
 Example commands:
 
 ```bash
-git tag -a v0.1.0 -m "Release v0.1.0"
-git push origin v0.1.0
+git tag -a v0.3.0 -m "Release v0.3.0"
+git push origin v0.3.0
 ```
 
 ## Automated version bump + changelog workflow
@@ -89,7 +89,7 @@ This repository contains metadata and helper files to simplify submission to the
 
 Keep `Builds`, `CurrentVersion`, and `CurrentVersionCode` in `fdroid/com.droidbert.yml` aligned with `app/build.gradle.kts` and the latest release tag.
 Use `AutoUpdateMode: Version +v%v` with `UpdateCheckMode: Tags` for tag-based F-Droid update detection.
-Current metadata is aligned to `v0.2.10` / `versionCode 12`.
+Current metadata is aligned to `v0.3.0` / `versionCode 15`.
 
 Example helper usage:
 
