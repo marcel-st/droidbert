@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-03-08
+
+### Fixed
+- App startup now opens the first historical comic (`1989-04-16`) on first launch instead of trying latest/today.
+- App now stores the last successfully viewed comic date and resumes from that comic when reopened.
+
 ## [0.3.1] - 2026-03-08
 
 ### Fixed

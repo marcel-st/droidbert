@@ -1,0 +1,1 @@
+Hotfix: first launch now opens 1989-04-16, and the app resumes the last viewed comic date on next startup.

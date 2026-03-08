@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         pickDateButton.setOnClickListener { openDatePicker() }
 
         lastKnownApiBaseUrl = getApiBaseUrl()
-        loadLatestComic()
+        loadInitialComic()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -121,9 +121,18 @@ class MainActivity : AppCompatActivity() {
         lastKnownApiBaseUrl = currentApi
         val dateToReload = currentDate
         if (dateToReload.isNullOrBlank()) {
-            loadLatestComic()
+            loadInitialComic()
         } else {
             loadComic(dateToReload)
+        }
+    }
+
+    private fun loadInitialComic() {
+        val storedDate = getLastViewedDate()
+        if (storedDate.isNullOrBlank()) {
+            loadComic(FIRST_COMIC_DATE)
+        } else {
+            loadComic(storedDate)
         }
     }
 
@@ -225,6 +234,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderComic(payload: ComicPayload) {
         currentDate = payload.date
+        saveLastViewedDate(payload.date)
         comicDateText.text = getString(R.string.date_title_prefix, payload.date)
         statusText.text = ""
 
@@ -331,6 +341,18 @@ class MainActivity : AppCompatActivity() {
         statusText.text = message
     }
 
+    private fun saveLastViewedDate(date: String) {
+        getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(AppPrefs.KEY_LAST_VIEWED_DATE, date)
+            .apply()
+    }
+
+    private fun getLastViewedDate(): String? {
+        return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
+            .getString(AppPrefs.KEY_LAST_VIEWED_DATE, null)
+    }
+
     private fun getApiBaseUrl(): String {
         val stored = getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
             .getString(AppPrefs.KEY_API_BASE_URL, getString(R.string.api_base_url_default))
@@ -387,5 +409,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val MAX_NAVIGATION_LOOKUPS = 15000
+        private const val FIRST_COMIC_DATE = "1989-04-16"
     }
 }
