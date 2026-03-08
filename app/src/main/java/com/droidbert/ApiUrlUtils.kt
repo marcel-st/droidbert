@@ -9,7 +9,7 @@ object ApiUrlUtils {
 
         val normalized = if (parsed.encodedPath == "/" || parsed.encodedPath.isBlank()) {
             parsed.newBuilder()
-                .encodedPath("/api/comic.php")
+                .encodedPath("/api/current.php")
                 .build()
         } else {
             parsed

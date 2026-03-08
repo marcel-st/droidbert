@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-03-08
+
+### Changed
+- Default API endpoint now points to `/api/current.php` and settings guidance now recommends `/api/current.php` while still supporting `/api/comic.php`.
+
+### Fixed
+- Legacy fallback root detection now recognizes both `/api/current.php` and `/api/comic.php` for self-hosted subpath deployments.
+- Confirmed startup flow: first launch starts at `1989-04-16`, while returning users resume from the last viewed comic.
+
+### Added
+- Added unit tests for startup decision logic to enforce first-launch (`1989-04-16`) vs returning-user (resume last viewed date) behavior.
+- Added Android instrumentation coverage for `last_viewed_date` persistence across `MainActivity` recreation and relaunch.
+
 ## [0.3.6] - 2026-03-08
 
 ### Fixed

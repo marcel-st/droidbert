@@ -16,12 +16,13 @@ Android app for reading Dilbert comics with a native interface backed by the Dai
 
 ## Behavior
 
-- Loads comic images directly from `https://dilbert.xo.nl/api/comic.php`.
-- Automatically falls back to legacy `get_comics.php` + `/comics/...` endpoints when `api/comic.php` is unavailable on a host.
+- Loads comic images directly from `https://dilbert.xo.nl/api/current.php` (compatible with date/latest queries).
+- Automatically falls back to legacy `get_comics.php` + `/comics/...` endpoints when API endpoints are unavailable on a host.
 - Shows a native comic reader UI optimized for phones.
 - Supports `Latest`, date picker lookup, and previous/next comic navigation.
 - Decodes and renders GIF comic images natively.
 - Includes a Settings screen to change API base URL at runtime.
+- First launch starts at `1989-04-16`; subsequent launches resume the user's last viewed comic.
 
 ## App icon
 
@@ -90,7 +91,7 @@ This repository contains metadata and helper files to simplify submission to the
 
 Keep `Builds`, `CurrentVersion`, and `CurrentVersionCode` in `fdroid/com.droidbert.yml` aligned with `app/build.gradle.kts` and the latest release tag.
 Use `AutoUpdateMode: Version` with `UpdateCheckMode: Tags` for tag-based F-Droid update detection.
-Current metadata is aligned to `v0.3.6` / `versionCode 21`.
+Current metadata is aligned to `v0.3.7` / `versionCode 22`.
 
 Example helper usage:
 
@@ -101,5 +102,19 @@ Example helper usage:
 ## Changelog
 
 See `CHANGELOG.md` for release notes.
+
+## Testing
+
+Run local JVM unit tests:
+
+```bash
+./gradlew :app:testDebugUnitTest
+```
+
+Run Android instrumentation tests (emulator/device required):
+
+```bash
+./gradlew :app:connectedDebugAndroidTest
+```
 
 Maintenance policy: every functional or workflow/configuration change should include matching updates to `README.md` and `CHANGELOG.md`.

@@ -1,0 +1,4 @@
+- Added native-friendly API integration with `/api/current.php` as the default endpoint.
+- Improved startup behavior: first launch opens the first historical comic (`1989-04-16`), returning users resume their last viewed comic.
+- Added test coverage for startup decision logic and last-viewed-date persistence across activity recreation/relaunch.
+- Improved compatibility for self-hosted servers by supporting both `/api/current.php` and `/api/comic.php` in fallback handling.

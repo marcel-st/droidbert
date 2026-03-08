@@ -134,12 +134,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadInitialComic() {
-        val storedDate = getLastViewedDate()
-        if (storedDate.isNullOrBlank()) {
-            loadComic(date = FIRST_COMIC_DATE, fallbackToLatestIfMissing = true)
-        } else {
-            loadComic(storedDate)
-        }
+        val initialRequest = resolveInitialComicRequest(getLastViewedDate())
+        loadComic(
+            date = initialRequest.date,
+            fallbackToLatestIfMissing = initialRequest.fallbackToLatestIfMissing
+        )
     }
 
     private fun openDatePicker() {
@@ -441,8 +440,9 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         val apiPath = baseUrl.encodedPath
-        val pathRoot = if (apiPath.endsWith("/api/comic.php")) {
-            val prefix = apiPath.removeSuffix("/api/comic.php").ifBlank { "/" }
+        val matchedSuffix = API_PATH_SUFFIXES.firstOrNull { apiPath.endsWith(it) }
+        val pathRoot = if (matchedSuffix != null) {
+            val prefix = apiPath.removeSuffix(matchedSuffix).ifBlank { "/" }
             baseUrl.newBuilder()
                 .encodedPath(if (prefix.endsWith('/')) prefix else "$prefix/")
                 .query(null)
@@ -534,8 +534,28 @@ class MainActivity : AppCompatActivity() {
         cause: Throwable? = null
     ) : IOException(message, cause)
 
+    internal data class InitialComicRequest(
+        val date: String,
+        val fallbackToLatestIfMissing: Boolean
+    )
+
     companion object {
         private const val MAX_NAVIGATION_LOOKUPS = 15000
         private const val FIRST_COMIC_DATE = "1989-04-16"
+        private val API_PATH_SUFFIXES = listOf("/api/current.php", "/api/comic.php")
+
+        internal fun resolveInitialComicRequest(storedDate: String?): InitialComicRequest {
+            return if (storedDate.isNullOrBlank()) {
+                InitialComicRequest(
+                    date = FIRST_COMIC_DATE,
+                    fallbackToLatestIfMissing = true
+                )
+            } else {
+                InitialComicRequest(
+                    date = storedDate,
+                    fallbackToLatestIfMissing = false
+                )
+            }
+        }
     }
 }
