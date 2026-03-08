@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-03-08
+
+### Changed
+- Release refresh: published a new APK build from the latest stable code and metadata.
+
 ## [0.3.4] - 2026-03-08
 
 ### Fixed
