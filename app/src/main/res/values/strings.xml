@@ -22,6 +22,8 @@
     <string name="api_base_url_label">API base URL</string>
     <string name="auto_split_panels_label">Auto-split comic into panels</string>
     <string name="auto_split_panels_description">Detect separator bars and show panels in reading order (top-left to bottom-right).</string>
+    <string name="invert_swipe_direction_label">Invert swipe direction</string>
+    <string name="invert_swipe_direction_description">When enabled, swipe left opens previous and swipe right opens next.</string>
     <string name="save">Save</string>
     <string name="settings_saved">Settings saved.</string>
     <string name="invalid_api_url">Please enter a valid URL.</string>

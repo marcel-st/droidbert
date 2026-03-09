@@ -21,6 +21,10 @@ Android app for reading Dilbert comics with a native interface backed by the Dai
 - Sends browser-like request headers for API and legacy requests to improve compatibility with servers/CDNs that filter bot-like clients.
 - Shows a native comic reader UI optimized for phones.
 - Supports `Latest`, date picker lookup, and previous/next comic navigation.
+- Supports swipe navigation on the comic area:
+	- swipe left = next comic, swipe right = previous comic (default)
+	- optional `Invert swipe direction` setting swaps this behavior
+- When loading another comic, the reader resets scroll position back to the top.
 - Decodes and renders GIF comic images natively.
 - Includes a Settings screen to change API base URL at runtime.
 - Supports two comic display modes via Settings:
@@ -97,7 +101,7 @@ This repository contains metadata and helper files to simplify submission to the
 
 Keep `Builds`, `CurrentVersion`, and `CurrentVersionCode` in `fdroid/com.droidbert.yml` aligned with `app/build.gradle.kts` and the latest release tag.
 Use `AutoUpdateMode: Version` with `UpdateCheckMode: Tags` for tag-based F-Droid update detection.
-Current metadata is aligned to `v0.3.11` / `versionCode 26`.
+Current metadata is aligned to `v0.3.12` / `versionCode 27`.
 
 Example helper usage:
 

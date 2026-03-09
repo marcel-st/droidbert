@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.12] - 2026-03-09
+
+### Added
+- Horizontal swipe navigation in the comic reading area (`left=next`, `right=previous`).
+- New Settings toggle: `Invert swipe direction`.
+
+### Changed
+- Comic reader now resets to the top whenever a different comic is loaded.
+
 ## [0.3.11] - 2026-03-09
 
 ### Added

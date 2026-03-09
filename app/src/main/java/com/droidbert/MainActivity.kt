@@ -7,8 +7,10 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.view.GestureDetector
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -19,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
 import coil.ImageLoader
 import coil.decode.GifDecoder
@@ -43,6 +46,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import java.util.regex.Pattern
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
 
@@ -70,6 +74,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var comicImage: ImageView
     private lateinit var panelContainer: LinearLayout
+    private lateinit var comicScrollView: NestedScrollView
     private lateinit var loadingIndicator: CircularProgressIndicator
     private lateinit var comicDateText: TextView
     private lateinit var statusText: TextView
@@ -93,6 +98,7 @@ class MainActivity : AppCompatActivity() {
     private var isLoading = false
     private var lastKnownApiBaseUrl: String? = null
     private var lastKnownAutoSplitPanels: Boolean = true
+    private var lastKnownInvertSwipeDirection: Boolean = false
     private var legacyIndexCacheOrigin: String? = null
     private var legacyIndexCacheFiles: List<String> = emptyList()
 
@@ -111,6 +117,7 @@ class MainActivity : AppCompatActivity() {
 
         comicImage = findViewById(R.id.comic_image)
         panelContainer = findViewById(R.id.panel_container)
+        comicScrollView = findViewById(R.id.comic_scroll_view)
         loadingIndicator = findViewById(R.id.loading_indicator)
         comicDateText = findViewById(R.id.comic_date_text)
         statusText = findViewById(R.id.status_text)
@@ -133,9 +140,11 @@ class MainActivity : AppCompatActivity() {
         nextButton.setOnClickListener { loadAdjacentComic(daysDelta = 1) }
         latestButton.setOnClickListener { loadLatestComic() }
         pickDateButton.setOnClickListener { openDatePicker() }
+        setupSwipeNavigation()
 
         lastKnownApiBaseUrl = getApiBaseUrl()
         lastKnownAutoSplitPanels = isAutoSplitPanelsEnabled()
+        lastKnownInvertSwipeDirection = isInvertSwipeDirectionEnabled()
         loadInitialComic()
     }
 
@@ -158,13 +167,16 @@ class MainActivity : AppCompatActivity() {
     private fun refreshIfSettingsChanged() {
         val currentApi = getApiBaseUrl()
         val currentAutoSplitPanels = isAutoSplitPanelsEnabled()
+        val currentInvertSwipeDirection = isInvertSwipeDirectionEnabled()
         val apiChanged = currentApi != lastKnownApiBaseUrl
         val autoSplitChanged = currentAutoSplitPanels != lastKnownAutoSplitPanels
-        if (!apiChanged && !autoSplitChanged) {
+        val swipeDirectionChanged = currentInvertSwipeDirection != lastKnownInvertSwipeDirection
+        if (!apiChanged && !autoSplitChanged && !swipeDirectionChanged) {
             return
         }
         lastKnownApiBaseUrl = currentApi
         lastKnownAutoSplitPanels = currentAutoSplitPanels
+        lastKnownInvertSwipeDirection = currentInvertSwipeDirection
 
         if (apiChanged) {
             legacyIndexCacheOrigin = null
@@ -316,6 +328,7 @@ class MainActivity : AppCompatActivity() {
         saveLastViewedDate(payload.date)
         comicDateText.text = getString(R.string.date_title_prefix, payload.date)
         statusText.text = ""
+        resetComicScrollToTop()
 
         if (!isAutoSplitPanelsEnabled()) {
             showFullComic(payload.bytes)
@@ -332,6 +345,54 @@ class MainActivity : AppCompatActivity() {
             } else {
                 showFullComic(payload.bytes)
             }
+        }
+    }
+
+    private fun setupSwipeNavigation() {
+        val gestureDetector = GestureDetector(
+            this,
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onDown(e: MotionEvent): Boolean = true
+
+                override fun onFling(
+                    e1: MotionEvent?,
+                    e2: MotionEvent,
+                    velocityX: Float,
+                    velocityY: Float
+                ): Boolean {
+                    if (isLoading || e1 == null) return false
+
+                    val deltaX = e2.x - e1.x
+                    val deltaY = e2.y - e1.y
+                    val isHorizontalFling =
+                        abs(deltaX) > 120f &&
+                            abs(velocityX) > 350f &&
+                            abs(deltaX) > abs(deltaY) * 1.2f
+
+                    if (!isHorizontalFling) return false
+
+                    val nextDelta = if (isInvertSwipeDirectionEnabled()) -1 else 1
+                    val previousDelta = -nextDelta
+
+                    if (deltaX < 0) {
+                        loadAdjacentComic(daysDelta = nextDelta)
+                    } else {
+                        loadAdjacentComic(daysDelta = previousDelta)
+                    }
+                    return true
+                }
+            }
+        )
+
+        comicScrollView.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            false
+        }
+    }
+
+    private fun resetComicScrollToTop() {
+        comicScrollView.post {
+            comicScrollView.scrollTo(0, 0)
         }
     }
 
@@ -735,6 +796,11 @@ class MainActivity : AppCompatActivity() {
     private fun isAutoSplitPanelsEnabled(): Boolean {
         return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
             .getBoolean(AppPrefs.KEY_AUTO_SPLIT_PANELS, true)
+    }
+
+    private fun isInvertSwipeDirectionEnabled(): Boolean {
+        return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
+            .getBoolean(AppPrefs.KEY_INVERT_SWIPE_DIRECTION, false)
     }
 
     private fun extractDateFromHeader(pathHeader: String?): String? {

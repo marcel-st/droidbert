@@ -19,6 +19,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var apiInputLayout: TextInputLayout
     private lateinit var apiInput: TextInputEditText
     private lateinit var autoSplitSwitch: MaterialSwitch
+    private lateinit var invertSwipeSwitch: MaterialSwitch
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,10 +32,12 @@ class SettingsActivity : AppCompatActivity() {
         apiInputLayout = findViewById(R.id.api_input_layout)
         apiInput = findViewById(R.id.api_input)
         autoSplitSwitch = findViewById(R.id.auto_split_switch)
+        invertSwipeSwitch = findViewById(R.id.invert_swipe_switch)
         val saveButton = findViewById<MaterialButton>(R.id.save_button)
 
         apiInput.setText(getStoredApiBaseUrl())
         autoSplitSwitch.isChecked = getStoredAutoSplitPanels()
+        invertSwipeSwitch.isChecked = getStoredInvertSwipeDirection()
 
         saveButton.setOnClickListener {
             saveApiBaseUrl()
@@ -55,6 +58,7 @@ class SettingsActivity : AppCompatActivity() {
             .edit()
             .putString(AppPrefs.KEY_API_BASE_URL, normalizedUrl)
             .putBoolean(AppPrefs.KEY_AUTO_SPLIT_PANELS, autoSplitSwitch.isChecked)
+            .putBoolean(AppPrefs.KEY_INVERT_SWIPE_DIRECTION, invertSwipeSwitch.isChecked)
             .apply()
 
         Toast.makeText(this, R.string.settings_saved, Toast.LENGTH_SHORT).show()
@@ -71,6 +75,11 @@ class SettingsActivity : AppCompatActivity() {
     private fun getStoredAutoSplitPanels(): Boolean {
         return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
             .getBoolean(AppPrefs.KEY_AUTO_SPLIT_PANELS, true)
+    }
+
+    private fun getStoredInvertSwipeDirection(): Boolean {
+        return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
+            .getBoolean(AppPrefs.KEY_INVERT_SWIPE_DIRECTION, false)
     }
 
     private fun applyToolbarWindowInsets(toolbar: MaterialToolbar) {
