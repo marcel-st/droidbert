@@ -26,6 +26,29 @@
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:alpha="0.85" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/settings_display_mode_hint"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:alpha="0.85" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/auto_split_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/auto_split_panels_label" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/auto_split_panels_description"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:alpha="0.75" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/api_input_layout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"

@@ -18,7 +18,10 @@
     <string name="no_more_next">No later comic found.</string>
     <string name="settings">Settings</string>
     <string name="settings_api_hint">Set the Daily Dilbert API endpoint used by this app. Recommended: /api/current.php (also supports /api/comic.php).</string>
+    <string name="settings_display_mode_hint">Choose how comics are shown.</string>
     <string name="api_base_url_label">API base URL</string>
+    <string name="auto_split_panels_label">Auto-split comic into panels</string>
+    <string name="auto_split_panels_description">Detect separator bars and show panels in reading order (top-left to bottom-right).</string>
     <string name="save">Save</string>
     <string name="settings_saved">Settings saved.</string>
     <string name="invalid_api_url">Please enter a valid URL.</string>

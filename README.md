@@ -23,6 +23,9 @@ Android app for reading Dilbert comics with a native interface backed by the Dai
 - Supports `Latest`, date picker lookup, and previous/next comic navigation.
 - Decodes and renders GIF comic images natively.
 - Includes a Settings screen to change API base URL at runtime.
+- Supports two comic display modes via Settings:
+	- `Auto-split comic into panels` (default): detects separator bars/gutters and renders panels in reading order (top-left to bottom-right).
+	- `Full image`: always renders the original comic image without splitting.
 - First launch starts at `1989-04-16`; subsequent launches resume the user's last viewed comic.
 
 ## App icon
@@ -39,6 +42,8 @@ Android app for reading Dilbert comics with a native interface backed by the Dai
 3. Install it on your Android device.
 
 If Android reports the APK is blocked by an installed app, the installed app was signed with a different key. Uninstall the currently installed Droidbert once, then install the new APK.
+
+For local development builds, `release` now falls back to debug signing when release keystore environment variables are not configured, so locally built release APKs remain installable.
 
 ## Release process (tagging + APK asset)
 
@@ -92,7 +97,7 @@ This repository contains metadata and helper files to simplify submission to the
 
 Keep `Builds`, `CurrentVersion`, and `CurrentVersionCode` in `fdroid/com.droidbert.yml` aligned with `app/build.gradle.kts` and the latest release tag.
 Use `AutoUpdateMode: Version` with `UpdateCheckMode: Tags` for tag-based F-Droid update detection.
-Current metadata is aligned to `v0.3.10` / `versionCode 25`.
+Current metadata is aligned to `v0.3.11` / `versionCode 26`.
 
 Example helper usage:
 

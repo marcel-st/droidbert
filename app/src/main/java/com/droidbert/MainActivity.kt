@@ -2,12 +2,17 @@ package com.droidbert
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +29,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -63,6 +69,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var comicImage: ImageView
+    private lateinit var panelContainer: LinearLayout
     private lateinit var loadingIndicator: CircularProgressIndicator
     private lateinit var comicDateText: TextView
     private lateinit var statusText: TextView
@@ -80,15 +87,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var imageLoader: ImageLoader
+    private var renderPanelsJob: Job? = null
     private var currentDate: String? = null
+    private var lastRenderedComicBytes: ByteArray? = null
     private var isLoading = false
     private var lastKnownApiBaseUrl: String? = null
+    private var lastKnownAutoSplitPanels: Boolean = true
     private var legacyIndexCacheOrigin: String? = null
     private var legacyIndexCacheFiles: List<String> = emptyList()
 
     private val settingsLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            refreshIfApiUrlChanged()
+            refreshIfSettingsChanged()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,6 +110,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         comicImage = findViewById(R.id.comic_image)
+        panelContainer = findViewById(R.id.panel_container)
         loadingIndicator = findViewById(R.id.loading_indicator)
         comicDateText = findViewById(R.id.comic_date_text)
         statusText = findViewById(R.id.status_text)
@@ -124,6 +135,7 @@ class MainActivity : AppCompatActivity() {
         pickDateButton.setOnClickListener { openDatePicker() }
 
         lastKnownApiBaseUrl = getApiBaseUrl()
+        lastKnownAutoSplitPanels = isAutoSplitPanelsEnabled()
         loadInitialComic()
     }
 
@@ -143,15 +155,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshIfApiUrlChanged() {
+    private fun refreshIfSettingsChanged() {
         val currentApi = getApiBaseUrl()
-        if (currentApi == lastKnownApiBaseUrl) {
+        val currentAutoSplitPanels = isAutoSplitPanelsEnabled()
+        val apiChanged = currentApi != lastKnownApiBaseUrl
+        val autoSplitChanged = currentAutoSplitPanels != lastKnownAutoSplitPanels
+        if (!apiChanged && !autoSplitChanged) {
             return
         }
         lastKnownApiBaseUrl = currentApi
-        legacyIndexCacheOrigin = null
-        legacyIndexCacheFiles = emptyList()
+        lastKnownAutoSplitPanels = currentAutoSplitPanels
+
+        if (apiChanged) {
+            legacyIndexCacheOrigin = null
+            legacyIndexCacheFiles = emptyList()
+        }
+
         val dateToReload = currentDate
+        if (autoSplitChanged && !apiChanged && !dateToReload.isNullOrBlank()) {
+            val bytes = lastRenderedComicBytes
+            if (bytes != null) {
+                renderComic(
+                    ComicPayload(
+                        date = dateToReload,
+                        bytes = bytes
+                    )
+                )
+                return
+            }
+        }
+
         if (dateToReload.isNullOrBlank()) {
             loadInitialComic()
         } else {
@@ -277,12 +310,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderComic(payload: ComicPayload) {
+        renderPanelsJob?.cancel()
         currentDate = payload.date
+        lastRenderedComicBytes = payload.bytes
         saveLastViewedDate(payload.date)
         comicDateText.text = getString(R.string.date_title_prefix, payload.date)
         statusText.text = ""
 
-        comicImage.load(payload.bytes, imageLoader) {
+        if (!isAutoSplitPanelsEnabled()) {
+            showFullComic(payload.bytes)
+            return
+        }
+
+        renderPanelsJob = lifecycleScope.launch {
+            val panels = withContext(Dispatchers.Default) {
+                splitComicIntoPanels(payload.bytes)
+            }
+
+            if (panels.size > 1) {
+                showPanels(panels)
+            } else {
+                showFullComic(payload.bytes)
+            }
+        }
+    }
+
+    private fun showFullComic(bytes: ByteArray) {
+        panelContainer.removeAllViews()
+        panelContainer.visibility = View.GONE
+        comicImage.visibility = View.VISIBLE
+
+        comicImage.load(bytes, imageLoader) {
             crossfade(true)
             listener(
                 onError = { _, _ ->
@@ -290,6 +348,264 @@ class MainActivity : AppCompatActivity() {
                 }
             )
         }
+    }
+
+    private fun showPanels(panels: List<Bitmap>) {
+        comicImage.setImageDrawable(null)
+        comicImage.visibility = View.GONE
+        panelContainer.removeAllViews()
+
+        val marginPx = (8 * resources.displayMetrics.density).toInt()
+        panels.forEach { panel ->
+            val panelView = ImageView(this).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).also { lp ->
+                    lp.bottomMargin = marginPx
+                }
+                adjustViewBounds = true
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setImageBitmap(panel)
+            }
+            panelContainer.addView(panelView)
+        }
+        panelContainer.visibility = View.VISIBLE
+    }
+
+    private fun splitComicIntoPanels(bytes: ByteArray): List<Bitmap> {
+        val source = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return emptyList()
+        if (source.width < 80 || source.height < 80) return emptyList()
+
+        val width = source.width
+        val height = source.height
+        val pixels = IntArray(width * height)
+        source.getPixels(pixels, 0, width, 0, 0, width, height)
+
+        val blackThreshold = 36
+        val brightThreshold = 236
+        val rowBlackRatios = FloatArray(height)
+        val colBlackRatios = FloatArray(width)
+        val rowLightRatios = FloatArray(height)
+        val colLightRatios = FloatArray(width)
+
+        for (y in 0 until height) {
+            var rowBlack = 0
+            var rowLight = 0
+            val rowOffset = y * width
+            for (x in 0 until width) {
+                val pixel = pixels[rowOffset + x]
+                if (isDarkPixel(pixel, blackThreshold)) {
+                    rowBlack++
+                    colBlackRatios[x] += 1f
+                }
+                if (isBrightPixel(pixel, brightThreshold)) {
+                    rowLight++
+                    colLightRatios[x] += 1f
+                }
+            }
+            rowBlackRatios[y] = rowBlack.toFloat() / width
+            rowLightRatios[y] = rowLight.toFloat() / width
+        }
+
+        for (x in 0 until width) {
+            colBlackRatios[x] /= height.toFloat()
+            colLightRatios[x] /= height.toFloat()
+        }
+
+        val rowDarkBars = collectSeparatorBands(
+            ratios = rowBlackRatios,
+            ratioThreshold = 0.88f,
+            minThickness = 2,
+            minEdgeDistance = (height * 0.02f).toInt(),
+            maxThickness = maxOf(8, (height * 0.1f).toInt())
+        )
+        val rowLightBars = collectSeparatorBands(
+            ratios = rowLightRatios,
+            ratioThreshold = 0.94f,
+            minThickness = 2,
+            minEdgeDistance = (height * 0.02f).toInt(),
+            maxThickness = maxOf(8, (height * 0.12f).toInt())
+        )
+        val colDarkBars = collectSeparatorBands(
+            ratios = colBlackRatios,
+            ratioThreshold = 0.88f,
+            minThickness = 2,
+            minEdgeDistance = (width * 0.02f).toInt(),
+            maxThickness = maxOf(8, (width * 0.1f).toInt())
+        )
+        val colLightBars = collectSeparatorBands(
+            ratios = colLightRatios,
+            ratioThreshold = 0.94f,
+            minThickness = 2,
+            minEdgeDistance = (width * 0.02f).toInt(),
+            maxThickness = maxOf(8, (width * 0.12f).toInt())
+        )
+
+        val rowBars = mergeBands(rowDarkBars + rowLightBars, maxGap = 4)
+        val colBars = mergeBands(colDarkBars + colLightBars, maxGap = 4)
+
+        if (rowBars.isEmpty() && colBars.isEmpty()) {
+            return emptyList()
+        }
+
+        val yCuts = buildCuts(height, rowBars)
+        val xCuts = buildCuts(width, colBars)
+
+        val minPanelWidth = maxOf(24, (width * 0.1f).toInt())
+        val minPanelHeight = maxOf(24, (height * 0.08f).toInt())
+        val minInkRatio = 0.012f
+
+        val panels = mutableListOf<Pair<RectKey, Bitmap>>()
+        for (yi in 0 until yCuts.lastIndex) {
+            for (xi in 0 until xCuts.lastIndex) {
+                val left = xCuts[xi]
+                val right = xCuts[xi + 1]
+                val top = yCuts[yi]
+                val bottom = yCuts[yi + 1]
+
+                val cellWidth = right - left
+                val cellHeight = bottom - top
+                if (cellWidth < minPanelWidth || cellHeight < minPanelHeight) {
+                    continue
+                }
+
+                val inkRatio = estimateInkRatio(
+                    pixels = pixels,
+                    imageWidth = width,
+                    left = left,
+                    top = top,
+                    right = right,
+                    bottom = bottom,
+                    darkThreshold = blackThreshold,
+                    sampleStep = 3
+                )
+                if (inkRatio < minInkRatio) {
+                    continue
+                }
+
+                val bitmap = Bitmap.createBitmap(source, left, top, cellWidth, cellHeight)
+                panels.add(RectKey(top = top, left = left) to bitmap)
+            }
+        }
+
+        if (panels.size <= 1) {
+            return emptyList()
+        }
+
+        return panels
+            .sortedWith(compareBy<Pair<RectKey, Bitmap>> { it.first.top }.thenBy { it.first.left })
+            .map { it.second }
+    }
+
+    private fun isDarkPixel(pixel: Int, darkThreshold: Int): Boolean {
+        return Color.red(pixel) <= darkThreshold &&
+            Color.green(pixel) <= darkThreshold &&
+            Color.blue(pixel) <= darkThreshold
+    }
+
+    private fun isBrightPixel(pixel: Int, brightThreshold: Int): Boolean {
+        return Color.red(pixel) >= brightThreshold &&
+            Color.green(pixel) >= brightThreshold &&
+            Color.blue(pixel) >= brightThreshold
+    }
+
+    private fun collectSeparatorBands(
+        ratios: FloatArray,
+        ratioThreshold: Float,
+        minThickness: Int,
+        minEdgeDistance: Int,
+        maxThickness: Int
+    ): List<Band> {
+        val bands = mutableListOf<Band>()
+        var start = -1
+        for (i in ratios.indices) {
+            if (ratios[i] >= ratioThreshold) {
+                if (start == -1) {
+                    start = i
+                }
+            } else if (start != -1) {
+                val end = i
+                if (end - start >= minThickness) {
+                    bands.add(Band(start, end))
+                }
+                start = -1
+            }
+        }
+        if (start != -1 && ratios.size - start >= minThickness) {
+            bands.add(Band(start, ratios.size))
+        }
+
+        return bands.filter {
+            val thickness = it.end - it.start
+            it.start > minEdgeDistance &&
+                it.end < (ratios.size - minEdgeDistance) &&
+                thickness <= maxThickness
+        }
+    }
+
+    private fun mergeBands(bands: List<Band>, maxGap: Int): List<Band> {
+        if (bands.isEmpty()) return emptyList()
+
+        val sorted = bands.sortedBy { it.start }
+        val merged = mutableListOf<Band>()
+        var currentStart = sorted.first().start
+        var currentEnd = sorted.first().end
+
+        for (i in 1 until sorted.size) {
+            val band = sorted[i]
+            if (band.start <= currentEnd + maxGap) {
+                currentEnd = maxOf(currentEnd, band.end)
+            } else {
+                merged.add(Band(currentStart, currentEnd))
+                currentStart = band.start
+                currentEnd = band.end
+            }
+        }
+        merged.add(Band(currentStart, currentEnd))
+        return merged
+    }
+
+    private fun buildCuts(size: Int, bars: List<Band>): List<Int> {
+        val cuts = mutableListOf(0)
+        bars.sortedBy { it.start }.forEach { band ->
+            val center = (band.start + band.end) / 2
+            if (center > cuts.last()) {
+                cuts.add(center)
+            }
+        }
+        if (cuts.last() < size) {
+            cuts.add(size)
+        }
+        return cuts
+    }
+
+    private fun estimateInkRatio(
+        pixels: IntArray,
+        imageWidth: Int,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+        darkThreshold: Int,
+        sampleStep: Int
+    ): Float {
+        var sampled = 0
+        var dark = 0
+        var y = top
+        while (y < bottom) {
+            var x = left
+            while (x < right) {
+                sampled++
+                if (isDarkPixel(pixels[y * imageWidth + x], darkThreshold)) {
+                    dark++
+                }
+                x += sampleStep
+            }
+            y += sampleStep
+        }
+        if (sampled == 0) return 0f
+        return dark.toFloat() / sampled
     }
 
     private suspend fun fetchComic(date: String?): Result<ComicPayload> {
@@ -414,6 +730,11 @@ class MainActivity : AppCompatActivity() {
             .getString(AppPrefs.KEY_API_BASE_URL, getString(R.string.api_base_url_default))
             .orEmpty()
         return ApiUrlUtils.normalizeApiBaseUrl(stored)
+    }
+
+    private fun isAutoSplitPanelsEnabled(): Boolean {
+        return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
+            .getBoolean(AppPrefs.KEY_AUTO_SPLIT_PANELS, true)
     }
 
     private fun extractDateFromHeader(pathHeader: String?): String? {
@@ -585,6 +906,16 @@ class MainActivity : AppCompatActivity() {
     private data class ComicPayload(
         val date: String,
         val bytes: ByteArray
+    )
+
+    private data class Band(
+        val start: Int,
+        val end: Int
+    )
+
+    private data class RectKey(
+        val top: Int,
+        val left: Int
     )
 
     private class ComicApiException(

@@ -9,6 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -17,6 +18,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var apiInputLayout: TextInputLayout
     private lateinit var apiInput: TextInputEditText
+    private lateinit var autoSplitSwitch: MaterialSwitch
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,9 +30,11 @@ class SettingsActivity : AppCompatActivity() {
 
         apiInputLayout = findViewById(R.id.api_input_layout)
         apiInput = findViewById(R.id.api_input)
+        autoSplitSwitch = findViewById(R.id.auto_split_switch)
         val saveButton = findViewById<MaterialButton>(R.id.save_button)
 
         apiInput.setText(getStoredApiBaseUrl())
+        autoSplitSwitch.isChecked = getStoredAutoSplitPanels()
 
         saveButton.setOnClickListener {
             saveApiBaseUrl()
@@ -50,6 +54,7 @@ class SettingsActivity : AppCompatActivity() {
         getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
             .edit()
             .putString(AppPrefs.KEY_API_BASE_URL, normalizedUrl)
+            .putBoolean(AppPrefs.KEY_AUTO_SPLIT_PANELS, autoSplitSwitch.isChecked)
             .apply()
 
         Toast.makeText(this, R.string.settings_saved, Toast.LENGTH_SHORT).show()
@@ -61,6 +66,11 @@ class SettingsActivity : AppCompatActivity() {
         return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
             .getString(AppPrefs.KEY_API_BASE_URL, getString(R.string.api_base_url_default))
             .orEmpty()
+    }
+
+    private fun getStoredAutoSplitPanels(): Boolean {
+        return getSharedPreferences(AppPrefs.NAME, Context.MODE_PRIVATE)
+            .getBoolean(AppPrefs.KEY_AUTO_SPLIT_PANELS, true)
     }
 
     private fun applyToolbarWindowInsets(toolbar: MaterialToolbar) {

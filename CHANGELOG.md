@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.11] - 2026-03-09
+
+### Added
+- Automatic comic panel splitting based on horizontal and vertical separator bars/gutters, rendered in reading order (top-left to bottom-right).
+- New Settings display mode toggle: `Auto-split comic into panels` (default) vs `Full image`.
+
+### Changed
+- Main screen now re-renders the currently loaded comic immediately when display mode is changed in Settings.
+
+### Fixed
+- Local `release` builds are now always installable by falling back to debug signing when release keystore environment variables are not provided.
+
 ## [0.3.10] - 2026-03-08
 
 ### Fixed

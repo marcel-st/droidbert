@@ -88,13 +88,26 @@
                 android:layout_height="match_parent"
                 android:fillViewport="true">
 
-                <ImageView
-                    android:id="@+id/comic_image"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:adjustViewBounds="true"
-                    android:contentDescription="@string/comic_image_content_desc"
-                    android:scaleType="fitCenter" />
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/panel_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/comic_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="@string/comic_image_content_desc"
+                        android:scaleType="fitCenter" />
+                </LinearLayout>
             </androidx.core.widget.NestedScrollView>
 
             <com.google.android.material.progressindicator.CircularProgressIndicator
